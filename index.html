@@ -497,6 +497,13 @@ function renderDailyWarm(){
   de.textContent = '· ' + (base.getMonth()+1) + '/' + base.getDate();
 }
 document.addEventListener('DOMContentLoaded', renderDailyWarm);
+
+/* 프로그램 모달 다국어 (v10) */
+const PROG_I18N = {
+  en:[['We, Breathe (Choir)','Listening to each other through song. You don’t have to sing well — belonging grows in the harmony we make together.'],['Two Colors, My Color','Exploring me between two cultures. You don’t have to pick one — both are me.'],['Mind Temperature 36.5','Healing concerts lowering daily stress with music and mindfulness.'],['After-school Rest Station','Games, reading, zoning out — all welcome in our online lounge.'],['My Language, World Language','Showcase the languages you know. Bilingualism is your power.'],['Family Concert','A concert with parents. Music bridges generations and cultures.'],['Two Languages, One Song','Mom’s language and mine in one song.'],['12-Week Healing Journey','A structured program with pre/post assessment.']],
+  zh:[['我们，呼吸（合唱）','通过唱歌练习倾听彼此。唱不好也没关系 — 在合声中归属感会成长。'],['两种颜色，我的颜色','探索在两种文化之间长大的我。不必只选一边。'],['心灵温度36.5','用音乐和正念降低日常压力的治愈演唱会。'],['放学后休憩站','游戏、阅读、发呆都可以。'],['我的语言·世界的语言','像展示一样讲述你会的语言。'],['家庭音乐会','和父母一起听的音乐会。'],['两种语言，一首歌','妈妈的语言和我的语言放进一首歌。'],['12周治愈之旅','有前后测评的结构化项目。']],
+  vi:[['Chúng ta, thở (Hợp xướng)','Lắng nghe nhau qua hát. Không cần hay — hòa âm cùng nhau tạo ra.'],['Hai màu, màu của tôi','Khám phá mình giữa hai văn hóa.'],['Nhiệt độ tâm hồn 36.5','Concert chữa lành giảm stress.'],['Trạm nghỉ sau giờ học','Game, đọc sách, ngẩn ngơ cũng được.'],['Ngôn ngữ của tôi','Song ngữ là sức mạnh.'],['Concert gia đình','Âm nhạc kết nối thế hệ.'],['Hai ngôn ngữ, một bài hát','Tiếng của mẹ và của mình.'],['Hành trình 12 tuần','Có đánh giá trước-sau.']]
+};
 /* ── 탭 뷰 전환 (08-30 v3) — 세션당 유지 ── */
 const VIEW_SECS = ['shelter','board','music','programs','check','counsel','about'];
 const HOME_EXTRAS = ['hero-sec','cards-sec'];
@@ -789,7 +796,10 @@ const I18N = {
   "aBlogL": "Blog",
   "hl1": "Suicide Prevention 1393",
   "hl2": "Youth Hotline 1388",
-  "hl3": "Multicultural Family 1577-0199"
+  "hl3": "Multicultural Family 1577-0199",
+  "pvT": "📋 Privacy Policy",
+  "pvBody": "<p><b style=\"color:var(--ink)\">1. Data Collected (Optional)</b><br>Nickname/name, age group, contact — all optional. The test works without them.</p><p><b style=\"color:var(--ink)\">2. Purpose</b><br>① To review your results later<br>② To contact you for safety if scores are high (only if contact provided)</p><p><b style=\"color:var(--ink)\">3. Storage & Disposal</b><br>Stored only in this browser, never sent to a server. Deleted with browser data. Separate consent will be requested for any future server storage.</p><p><b style=\"color:var(--ink)\">4. Third-party Sharing</b><br>None. Never provided or sold to anyone.</p><p><b style=\"color:var(--ink)\">5. Safety Measures</b><br>Only for self/other-harm risk signals (e.g., item 9), we recommend public support lines such as Suicide Prevention 1393.</p><p><b style=\"color:var(--ink)\">6. Contact</b><br>Art in Touch Social Cooperative · 010-6410-0146</p><p style=\"font-size:12px;color:#9a8f80\">Effective: August 30, 2026</p>",
+  "pvOk": "OK"
  },
  "zh": {
   "logo": "和谐 心灵休憩处",
@@ -939,7 +949,10 @@ const I18N = {
   "aBlogL": "博客",
   "hl1": "自杀预防咨询 1393",
   "hl2": "青少年热线 1388",
-  "hl3": "多文化家庭 1577-0199"
+  "hl3": "多文化家庭 1577-0199",
+  "pvT": "📋 隐私政策",
+  "pvBody": "<p><b style=\"color:var(--ink)\">1. 收集项目（选填）</b><br>昵称/姓名、年龄段、联系方式 — 均为选填，不填也可使用检查。</p><p><b style=\"color:var(--ink)\">2. 收集目的</b><br>① 方便以后查看检查结果<br>② 分数较高时为安全联系您（仅在填写联系方式时）</p><p><b style=\"color:var(--ink)\">3. 保管与销毁</b><br>信息仅保存在本浏览器中，不会传送到服务器。删除浏览器数据时一并删除。日后转为服务器保存时会再次征得同意。</p><p><b style=\"color:var(--ink)\">4. 第三方提供</b><br>不会。任何情况下都不向外部提供或出售。</p><p><b style=\"color:var(--ink)\">5. 安全措施</b><br>仅在出现自伤/伤人风险信号（如第9题）时，建议联系自杀预防咨询1393等公共支援机构。</p><p><b style=\"color:var(--ink)\">6. 咨询</b><br>Art in Touch 社会合作社 · 010-6410-0146</p><p style=\"font-size:12px;color:#9a8f80\">施行日: 2026年8月30日</p>",
+  "pvOk": "确认"
  },
  "vi": {
   "logo": "Eoullim – Chốn nghỉ tâm hồn",
@@ -1089,11 +1102,14 @@ const I18N = {
   "aBlogL": "Blog",
   "hl1": "Phòng chống tự tử 1393",
   "hl2": "Đường dây tuổi teen 1388",
-  "hl3": "Gia đình đa văn hóa 1577-0199"
+  "hl3": "Gia đình đa văn hóa 1577-0199",
+  "pvT": "📋 Chính sách quyền riêng tư",
+  "pvBody": "<p><b style=\"color:var(--ink)\">1. Thông tin thu thập (không bắt buộc)</b><br>Biệt danh/tên, độ tuổi, liên hệ — đều là tùy chọn, không điền vẫn dùng được.</p><p><b style=\"color:var(--ink)\">2. Mục đích</b><br>① Để xem lại kết quả sau này<br>② Liên hệ vì an toàn khi điểm cao (chỉ khi bạn cung cấp liên hệ)</p><p><b style=\"color:var(--ink)\">3. Lưu trữ & Hủy</b><br>Chỉ lưu trong trình duyệt này, không gửi máy chủ. Xóa khi xóa dữ liệu trình duyệt. Nếu sau này chuyển sang máy chủ sẽ xin đồng ý riêng.</p><p><b style=\"color:var(--ink)\">4. Chia sẻ bên thứ 3</b><br>Không. Không bao giờ cung cấp hay bán cho bất kỳ ai.</p><p><b style=\"color:var(--ink)\">5. Biện pháp an toàn</b><br>Chỉ khi có tín hiệu nguy cơ tự hại (ví dụ câu 9), chúng tôi khuyến nghị liên hệ đường dây công cộng như Phòng chống tự tử 1393.</p><p><b style=\"color:var(--ink)\">6. Liên hệ</b><br>Hợp tác xã Art in Touch · 010-6410-0146</p><p style=\"font-size:12px;color:#9a8f80\">Hiệu lực: 30/8/2026</p>",
+  "pvOk": "Đồng ý"
  }
 };
 // 원문(한국어) 백업 — 첫 로드 시 1회 (08-30 언어 복귀 버그 수정)
-document.querySelectorAll('[data-i18n]').forEach(el=>{ el.dataset.orig=el.innerHTML; });
+document.addEventListener('DOMContentLoaded',()=>{ document.querySelectorAll('[data-i18n]').forEach(el=>{ el.dataset.orig=el.innerHTML; }); });
 document.querySelectorAll('[ph-key]').forEach(el=>{ el.dataset.origPh = el.placeholder; });
 document.querySelectorAll('.lang button').forEach(b=>{
   b.onclick=()=>{
@@ -1183,21 +1199,20 @@ document.getElementById('counsel-form').onsubmit=e=>{
   alert(t('apply_ok')||'신청이 접수되었습니다 🌿 1~2일 내에 연락드릴게요.');
 };
 </script>
-<div id="prog-modal" style="display:none;position:fixed;inset:0;z-index:100;background:rgba(50,40,30,.55);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)this.style.display='none'"><div style="background:#fff;border-radius:20px;max-width:520px;width:100%;padding:32px;position:relative;max-height:86vh;overflow:auto"><button onclick="document.getElementById('prog-modal').style.display='none'" style="position:absolute;top:14px;right:14px;border:none;background:var(--cream2);width:34px;height:34px;border-radius:50%;font-size:16px;cursor:pointer">✕</button><h3 id="pm-title" style="font-size:21px;margin-bottom:14px;color:var(--sage-dark)"></h3><p id="pm-desc" style="font-size:15px;color:var(--sub);line-height:1.8;margin-bottom:18px"></p><a id="pm-video" href="#" target="_blank" rel="noopener" style="display:block;background:var(--sage);color:#fff;text-decoration:none;text-align:center;padding:13px;border-radius:12px;font-weight:bold" dyn-key="see_video">🎬 관련 영상 보기</a><a id="pm-apply" href="#counsel" onclick="document.getElementById('prog-modal').style.display='none'" style="display:block;text-align:center;margin-top:10px;color:var(--sage-dark);font-size:14px;text-decoration:underline" dyn-key="ask_prog">이 프로그램 문의하기</a></div></div><script>const PROG_DATA=[{"t": "우리, 숨쉬다 (합착·노래)", "d": "노래하며 서로의 소리를 듣는 시간입니다. 잘 부르지 못해도 괜찮아요 — 함께 만드는 하모니 속에서 소속감이 자라납니다. Y-VOICE 청소년합창단에서 검증한 방식으로 진행해요.", "q": "청소년 합창 지도"}, {"t": "둘의 색, 나의 색", "d": "두 문화 사이에서 자란 나를 미술과 음악으로 탐색하는 시간. 어느 쪽 하나만 고르지 않아도, 둘 다 나임을 발견합니다.", "q": "다문화 청소년 미술치료"}, {"t": "마음온도 36.5", "d": "음악 감상과 마음챙김으로 일상의 스트레스를 낮추는 힐링 콘서트·워크숍. 아트인터치의 대표 콘텐츠 [마음온도 36.5 콘서트]에서 확장된 프로그램입니다.", "q": "마음챙김 명상 음악"}, {"t": "방과후 쉼 스테이션", "d": "학교 끝나고 갈 곳이 없을 때 — 온라인 쉼방에서 게임, 독서, 그냥 멍때리기까지 모두 환영합니다.", "q": "청소년 방과후 프로그램"}, {"t": "우리말·세계말 자랑", "d": "내가 아는 언어를 자랑처럼 이야기하는 시간. 이중언어는 나의 힘입니다.", "q": "다문화 청소년 이야기"}, {"t": "가족과 함께 듣는 콘서트", "d": "부모와 함께 듣는 음악회. 세대와 문화의 벽을 음악으로 잇습니다.", "q": "가족 음악회"}, {"t": "둘의 언어, 하나의 노래 (부모-자녀 공동)", "d": "엄마의 언어와 나의 언어를 한 곡에 담는 공동 작업. 음악을 통해 서로의 세계를 듣습니다.", "q": "다문화가족 프로그램"}, {"t": "12주 치유의 여정 (집단 아르테라피)", "d": "사전-사후 심리검사로 변화를 함께 확인하는 12주 구조화 프로그램. 마음체크 점수가 높은 분을 우선으로 모십니다.", "q": "집단 미술치료"}];function openProg(i){const d=PROG_DATA[i];document.getElementById("pm-title").textContent=d.t;document.getElementById("pm-desc").textContent=d.d;document.getElementById("pm-video").href="https://www.youtube.com/results?search_query="+encodeURIComponent(d.q);document.getElementById("prog-modal").style.display="flex";}document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('prog-modal').style.display='none';});</script>
+<div id="prog-modal" style="display:none;position:fixed;inset:0;z-index:100;background:rgba(50,40,30,.55);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)this.style.display='none'"><div style="background:#fff;border-radius:20px;max-width:520px;width:100%;padding:32px;position:relative;max-height:86vh;overflow:auto"><button onclick="document.getElementById('prog-modal').style.display='none'" style="position:absolute;top:14px;right:14px;border:none;background:var(--cream2);width:34px;height:34px;border-radius:50%;font-size:16px;cursor:pointer">✕</button><h3 id="pm-title" style="font-size:21px;margin-bottom:14px;color:var(--sage-dark)"></h3><p id="pm-desc" style="font-size:15px;color:var(--sub);line-height:1.8;margin-bottom:18px"></p><a id="pm-video" href="#" target="_blank" rel="noopener" style="display:block;background:var(--sage);color:#fff;text-decoration:none;text-align:center;padding:13px;border-radius:12px;font-weight:bold" dyn-key="see_video">🎬 관련 영상 보기</a><a id="pm-apply" href="#counsel" onclick="document.getElementById('prog-modal').style.display='none'" style="display:block;text-align:center;margin-top:10px;color:var(--sage-dark);font-size:14px;text-decoration:underline" dyn-key="ask_prog">이 프로그램 문의하기</a></div></div><script>const PROG_DATA=[{"t": "우리, 숨쉬다 (합착·노래)", "d": "노래하며 서로의 소리를 듣는 시간입니다. 잘 부르지 못해도 괜찮아요 — 함께 만드는 하모니 속에서 소속감이 자라납니다. Y-VOICE 청소년합창단에서 검증한 방식으로 진행해요.", "q": "청소년 합창 지도"}, {"t": "둘의 색, 나의 색", "d": "두 문화 사이에서 자란 나를 미술과 음악으로 탐색하는 시간. 어느 쪽 하나만 고르지 않아도, 둘 다 나임을 발견합니다.", "q": "다문화 청소년 미술치료"}, {"t": "마음온도 36.5", "d": "음악 감상과 마음챙김으로 일상의 스트레스를 낮추는 힐링 콘서트·워크숍. 아트인터치의 대표 콘텐츠 [마음온도 36.5 콘서트]에서 확장된 프로그램입니다.", "q": "마음챙김 명상 음악"}, {"t": "방과후 쉼 스테이션", "d": "학교 끝나고 갈 곳이 없을 때 — 온라인 쉼방에서 게임, 독서, 그냥 멍때리기까지 모두 환영합니다.", "q": "청소년 방과후 프로그램"}, {"t": "우리말·세계말 자랑", "d": "내가 아는 언어를 자랑처럼 이야기하는 시간. 이중언어는 나의 힘입니다.", "q": "다문화 청소년 이야기"}, {"t": "가족과 함께 듣는 콘서트", "d": "부모와 함께 듣는 음악회. 세대와 문화의 벽을 음악으로 잇습니다.", "q": "가족 음악회"}, {"t": "둘의 언어, 하나의 노래 (부모-자녀 공동)", "d": "엄마의 언어와 나의 언어를 한 곡에 담는 공동 작업. 음악을 통해 서로의 세계를 듣습니다.", "q": "다문화가족 프로그램"}, {"t": "12주 치유의 여정 (집단 아르테라피)", "d": "사전-사후 심리검사로 변화를 함께 확인하는 12주 구조화 프로그램. 마음체크 점수가 높은 분을 우선으로 모십니다.", "q": "집단 미술치료"}];function openProg(i){const d=PROG_DATA[i];const loc=(typeof CUR_LANG!=='undefined'&&CUR_LANG!=='ko'&&PROG_I18N[CUR_LANG]&&PROG_I18N[CUR_LANG][i])?PROG_I18N[CUR_LANG][i]:[d.t,d.d];document.getElementById("pm-title").textContent=loc[0];document.getElementById("pm-desc").textContent=loc[1];document.getElementById("pm-video").href="https://www.youtube.com/results?search_query="+encodeURIComponent(d.q);document.getElementById("prog-modal").style.display="flex";}document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('prog-modal').style.display='none';});</script>
 <div id="privacy-modal" style="display:none;position:fixed;inset:0;z-index:100;background:rgba(50,40,30,.55);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:16px" onclick="if(event.target===this)this.style.display='none'">
   <div style="background:#fff;border-radius:18px;max-width:520px;width:100%;padding:28px;position:relative;max-height:84vh;overflow:auto">
     <button onclick="document.getElementById('privacy-modal').style.display='none'" style="position:absolute;top:12px;right:12px;border:none;background:var(--cream2);width:32px;height:32px;border-radius:50%;font-size:15px;cursor:pointer">✕</button>
-    <h3 style="font-size:19px;margin-bottom:14px;color:var(--sage-dark)">📋 개인정보 처리방침</h3>
-    <div style="font-size:13.5px;color:var(--sub);line-height:1.8">
+    <h3 style="font-size:19px;margin-bottom:14px;color:var(--sage-dark)" data-i18n="pvT">📋 개인정보 처리방침</h3>
+    <div style="font-size:13.5px;color:var(--sub);line-height:1.8" data-i18n="pvBody">
       <p><b style="color:var(--ink)">1. 수집 항목 (선택)</b><br>닉네임/이름, 나이대, 연락처 — 모두 선택 입력이며, 미입력 시에도 검사 이용이 가능합니다.</p>
       <p><b style="color:var(--ink)">2. 수집 목적</b><br>① 검사 결과를 나중에 다시 확인할 수 있도록 하기 위해<br>② 점수가 높게 나온 경우 안전을 위해 연락하기 위해 (연락처 입력 시에만)</p>
       <p><b style="color:var(--ink)">3. 보관 및 파기</b><br>정보는 이 브라우저에만 저장되며, 서버로 전송되지 않습니다. 브라우저 데이터 삭제 시 함께 사라집니다. 향후 서버 저장 전환 시에는 별도 동의를 다시 받습니다.</p>
       <p><b style="color:var(--ink)">4. 제3자 제공</b><br>하지 않습니다. 어떠한 경우에도 외부에 제공·판매하지 않습니다.</p>
       <p><b style="color:var(--ink)">5. 안전 조치</b><br>자·타침 위험 신호(검사 9번 문항 등)가 있는 경우에만, 안전을 위해 자살예방상담 1393 등 공적 지원기관 연계를 권합니다.</p>
       <p><b style="color:var(--ink)">6. 문의</b><br>아트인터치 사회적협동조합 · 010-6410-0146</p>
-      <p style="font-size:12px;color:#9a8f80">시행일: 2026년 8월 30일</p>
-    </div>
-    <button onclick="document.getElementById('privacy-modal').style.display='none'" style="margin-top:16px;width:100%;padding:12px;background:var(--sage);color:#fff;border:none;border-radius:12px;font-size:14.5px;font-weight:bold;cursor:pointer">확인</button>
+      <p style="font-size:12px;color:#9a8f80">시행일: 2026년 8월 30일</p></div>
+    <button onclick="document.getElementById('privacy-modal').style.display='none'" style="margin-top:16px;width:100%;padding:12px;background:var(--sage);color:#fff;border:none;border-radius:12px;font-size:14.5px;font-weight:bold;cursor:pointer" data-i18n="pvOk">확인</button>
   </div>
 </div>
 <script>
