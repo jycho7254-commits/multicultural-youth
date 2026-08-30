@@ -12,20 +12,20 @@
   --ink:#43372e; --sub:#7d6f60; --coral:#e07856; --sky:#e8a87c;
   --radius:18px; --shadow:0 4px 24px rgba(180,120,80,.12);
 }
-*{margin:0;padding:0;box-sizing:border-box}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{scroll-behavior:smooth}
 body{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;color:var(--ink);background:var(--cream);line-height:1.7}
 .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
 /* 헤더 */
 header{position:sticky;top:0;z-index:50;background:rgba(250,247,240,.92);backdrop-filter:blur(10px);border-bottom:1px solid #e8e2d2}
 nav{display:flex;align-items:center;justify-content:space-between;height:64px}
-.logo{display:flex;align-items:center;gap:10px;font-weight:bold;font-size:19px;color:var(--sage-dark)}
-.logo .mark{width:36px;height:36px;border-radius:50%;background:var(--sage);color:#fff;display:flex;align-items:center;justify-content:center;font-size:17px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:bold;font-size:19px;color:var(--sage-dark);white-space:nowrap}
+.logo .mark{width:36px;height:36px;border-radius:50%;background:var(--sage);color:#fff;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
 .nav-links{display:flex;gap:6px}
 .nav-links a{padding:8px 12px;border-radius:10px;color:var(--sub);text-decoration:none;font-size:14.5px}
 .nav-links a:hover{background:var(--cream2);color:var(--sage-dark)}
-.lang{display:flex;gap:4px}
-.lang button{border:1px solid #ddd6c4;background:#fff;border-radius:8px;padding:4px 8px;font-size:12px;cursor:pointer;color:var(--sub)}
+.lang{display:flex;gap:4px;flex-shrink:0}
+.lang button{border:1px solid #ddd6c4;background:#fff;border-radius:8px;padding:4px 8px;font-size:12px;cursor:pointer;color:var(--sub);flex-shrink:0}
 .lang button.on{background:var(--sage);color:#fff;border-color:var(--sage)}
 /* 히어로 */
 .hero{padding:88px 0 72px;text-align:center;background:linear-gradient(180deg,var(--cream) 0%,#f8ecdd 100%)}
@@ -75,7 +75,7 @@ section{padding:72px 0}
 .q{margin:18px 0;padding:16px;background:var(--cream2);border-radius:12px}
 .q p{font-size:15px;margin-bottom:10px;font-weight:bold}
 .opts{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
-.opts label{font-size:11.5px;text-align:center;padding:8px 2px;background:#fff;border:2px solid #e8e2d2;border-radius:8px;cursor:pointer;transition:.15s}
+.opts label{font-size:12px;text-align:center;padding:9px 2px;background:#fff;border:2px solid #e8e2d2;border-radius:8px;cursor:pointer;transition:.15s;white-space:nowrap}
 .opts label:hover{border-color:var(--sage)}
 .opts input{display:none}
 .opts input:checked+span{display:block;background:var(--sage);color:#fff;border-radius:6px;margin:-8px -2px;padding:8px 2px}
@@ -116,7 +116,10 @@ footer a:hover{color:#fff}
 .emergency b{color:#ffd28a}
 .emergency a{color:#fff;text-decoration:underline}
 @media(max-width:820px){
-  .nav-links{display:none}
+  nav{height:56px}
+  .nav-links{display:flex!important;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:2px;max-width:52vw}
+  .nav-links::-webkit-scrollbar{display:none}
+  .nav-links a{padding:7px 9px;font-size:13px;white-space:nowrap}
   .place,.counsel{grid-template-columns:1fr}
   footer .cols{grid-template-columns:1fr}
   .opts{grid-template-columns:repeat(3,1fr)}
@@ -130,11 +133,13 @@ footer a:hover{color:#fff}
   <nav class="wrap">
     <div class="logo"><span class="mark">🧡</span><span data-i18n="logo">어울림 마음쉼터</span></div>
     <div class="nav-links">
-      <a href="#shelter" data-i18n="nav1">쉼터</a>
-      <a href="#programs" data-i18n="nav2">프로그램</a>
-      <a href="#check" data-i18n="nav3">마음체크</a>
-      <a href="#counsel" data-i18n="nav4">상담신청</a>
-      <a href="#about" data-i18n="nav5">소개</a>
+      <a href="#shelter" data-i18n="nav1" class="view-link" data-sec="shelter">쉼터</a>
+      <a href="#board" class="view-link" data-sec="board">게시판</a>
+      <a href="#music" class="view-link" data-sec="music">함께듣기</a>
+      <a href="#programs" data-i18n="nav2" class="view-link" data-sec="programs">프로그램</a>
+      <a href="#check" data-i18n="nav3" class="view-link" data-sec="check">마음체크</a>
+      <a href="#counsel" data-i18n="nav4" class="view-link" data-sec="counsel">상담신청</a>
+      <a href="#about" data-i18n="nav5" class="view-link" data-sec="about">소개</a>
     </div>
     <div class="lang">
       <button class="on" data-lang="ko">한</button>
@@ -150,8 +155,8 @@ footer a:hover{color:#fff}
     <h1 data-i18n="hero1">여기, <em>쉬어가도 괜찮은 곳</em></h1>
     <p data-i18n="hero2">다문화 청소년, 그리고 모든 청소년을 위한 온라인 쉼공간입니다. 언제든, 어디서든. 음악이 있고, 따뜻한 문구가 있고, 당신의 이야기를 들어주는 사람이 있습니다.</p>
     <div class="btns">
-      <a href="#check" class="btn primary" data-i18n="heroBtn1">🫶 3분 마음체크</a>
-      <a href="#counsel" class="btn ghost" data-i18n="heroBtn2">상담 신청하기</a>
+      <a href="#check" class="btn primary view-link" data-sec="check" data-i18n="heroBtn1">🫶 3분 마음체크</a>
+      <a href="#counsel" class="btn ghost view-link" data-sec="counsel" data-i18n="heroBtn2">상담 신청하기</a>
     </div>
   </div>
 </section>
@@ -182,7 +187,53 @@ footer a:hover{color:#fff}
       </div>
     </div>
   </div>
-</section>>
+</section>
+
+<section id="board" style="background:var(--cream2)">
+  <div class="wrap">
+    <div class="sec-head"><span class="tag">마음 나눔</span><h2>마음 주고받기 게시판</h2><p>좋아요 대신 '따뜻해요'만 있는 곳. 비밀글로 조용히 쓰고 싶을 때도.</p></div>
+    <div class="board-box" style="max-width:680px;margin:0 auto;background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:26px">
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <input id="board-nick" placeholder="닉네임 (안 적어도 OK)" style="flex:1;padding:11px 14px;border:1.5px solid #e8dcc8;border-radius:10px;font-size:14px;background:var(--cream)">
+        <label style="display:flex;align-items:center;gap:5px;font-size:13px;color:var(--sub);cursor:pointer;white-space:nowrap"><input type="checkbox" id="board-secret"> 비밀글</label>
+      </div>
+      <textarea id="board-text" placeholder="마음을 적어보세요. 아무 말이라도 괜찮아요." style="width:100%;min-height:80px;padding:12px 14px;border:1.5px solid #e8dcc8;border-radius:10px;font-size:14.5px;font-family:inherit;background:var(--cream);resize:vertical"></textarea>
+      <button id="board-write" style="margin-top:12px;width:100%;padding:12px;background:var(--sage);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:bold;cursor:pointer">글 남기기 🧡</button>
+      <div id="board-list" style="margin-top:22px"></div>
+      <p style="font-size:12px;color:#9a8f80;margin-top:14px;text-align:center">* 비밀글은 작성한 브라우저에서만 보여요</p>
+    </div>
+  </div>
+</section>
+
+<section id="music">
+  <div class="wrap">
+    <div class="sec-head"><span class="tag">함께 듣기</span><h2>플레이리스트 & 쉼방</h2><p>같은 노래를 같은 시간에. 혼자가 아니라는 감각.</p></div>
+    <div class="grid3">
+      <div class="prog" style="cursor:default">
+        <h4>🎧 오늘의 플레이리스트</h4>
+        <p style="min-height:52px">지금 이 순간, 다른 누군가와 듣는 위로의 곡들.</p>
+        <div id="pl-list" style="margin:10px 0"></div>
+        <a href="https://music.youtube.com/search?q=%EC%9C%84%EB%A1%9C%EB%8A%94+%ED%9E%88%EB%93%A0+%EA%B3%A1" target="_blank" rel="noopener" style="color:var(--sage-dark);font-size:13.5px;text-decoration:underline">전체 재생목록 열기 →</a>
+      </div>
+      <div class="prog" style="cursor:default">
+        <h4>💬 온라인 쉼방 (톡방)</h4>
+        <p style="min-height:52px">말 안 해도, 듣기만 해도 괜찮은 익명 톡방. 화·목 저녁 8시 함께.</p>
+        <div style="background:var(--cream2);border-radius:12px;padding:14px;margin:10px 0;font-size:13.5px;color:var(--sub)">
+          <b style="color:var(--sage-dark)">참여</b> — 카카오톡 채널 '어울림' 추가 후 쉼방 초대
+        </div>
+        <a href="https://pf.kakao.com/" target="_blank" rel="noopener" style="color:var(--sage-dark);font-size:13.5px;text-decoration:underline">카카오톡 채널 문의 →</a>
+      </div>
+      <div class="prog" style="cursor:default">
+        <h4>🎶 신청곡 남기기</h4>
+        <p style="min-height:52px">여러분의 신청곡으로 플레이리스트가 채워져요.</p>
+        <input id="song-title" placeholder="노래 제목" style="width:100%;padding:11px 14px;border:1.5px solid #e8dcc8;border-radius:10px;font-size:14px;background:var(--cream);margin-top:6px">
+        <input id="song-why" placeholder="이 곡을 신청한 이유 (선택)" style="width:100%;padding:11px 14px;border:1.5px solid #e8dcc8;border-radius:10px;font-size:14px;background:var(--cream);margin-top:8px">
+        <button id="song-submit" style="margin-top:10px;width:100%;padding:12px;background:var(--sage);color:#fff;border:none;border-radius:12px;font-size:14.5px;font-weight:bold;cursor:pointer">신청하기</button>
+        <div id="song-list" style="margin-top:14px"></div>
+      </div>
+    </div>
+  </div>
+</section>
 
 <section id="programs" style="background:var(--cream2)">
   <div class="wrap">
@@ -306,6 +357,99 @@ footer a:hover{color:#fff}
 </div>
 
 <script>
+/* ── 탭 뷰 전환 (08-30 v3) — 세션당 유지 ── */
+const VIEW_SECS = ['shelter','board','music','programs','check','counsel','about'];
+function showView(sec, push=true){
+  VIEW_SECS.forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.style.display = (id===sec)?'block':'none';
+  });
+  document.querySelectorAll('.view-link').forEach(a=>a.style.fontWeight = a.dataset.sec===sec?'800':'400');
+  if(push && location.hash !== '#'+sec) history.replaceState(null,'','#'+sec);
+  window.scrollTo({top:0});
+  sessionStorage.setItem('view', sec);
+}
+document.querySelectorAll('.view-link').forEach(a=>{
+  a.addEventListener('click', e=>{ e.preventDefault(); showView(a.dataset.sec); });
+});
+window.addEventListener('load', ()=>{
+  const h = location.hash.replace('#','');
+  const init = VIEW_SECS.includes(h) ? h : (sessionStorage.getItem('view') || 'shelter');
+  // 홈(히어로+카드)은 shelter 뷰의 일부로 상단 고정 표시
+  showView(init, false);
+});
+
+/* ── 마음 게시판 (localStorage — Phase 2에서 Supabase 전환) ── */
+function boardData(){ return JSON.parse(localStorage.getItem('eoullim_board')||'[]'); }
+function boardSave(d){ localStorage.setItem('eoullim_board', JSON.stringify(d.slice(0,50))); }
+function boardRender(sort){
+  const list = document.getElementById('board-list');
+  if(!list) return;
+  let d = boardData();
+  if(sort==='warm') d = d.slice().sort((a,b)=>b.warm-a.warm);
+  d.forEach(post=>{ if(post.secret) post._show = (post.key===localStorage.getItem('eoullim_mykey')); else post._show=true; });
+  const shown = d.filter(x=>x._show);
+  list.innerHTML = shown.length ? shown.map(p=>`
+    <div style="padding:14px;border-bottom:1px dashed #e8dcc8">
+      <div style="display:flex;justify-content:space-between;font-size:12.5px;color:#9a8f80;margin-bottom:5px">
+        <span>${p.nick||'익명의 마음'} ${p.secret?'· 🔒비밀글':''}</span><span>${p.date}</span>
+      </div>
+      <p style="font-size:14.5px;margin-bottom:8px;white-space:pre-wrap">${esc(p.text)}</p>
+      <button onclick="addWarm(${p.id})" style="border:1.5px solid #e8dcc8;background:var(--cream);border-radius:16px;padding:5px 14px;font-size:13px;cursor:pointer">🧡 따뜻해요 ${p.warm||0}</button>
+    </div>`).join('') : '<p style="text-align:center;color:#9a8f80;font-size:14px;padding:18px">아직 첫 마음이 남겨지지 않았어요. 당신의 한마디가 첫 번째가 되어줄래요?</p>';
+}
+function esc(t){ const d=document.createElement('div'); d.textContent=t||''; return d.innerHTML; }
+function addWarm(id){
+  const d = boardData(); const p = d.find(x=>x.id===id); if(!p) return;
+  const key='warm_'+id; if(localStorage.getItem(key)) return;
+  localStorage.setItem(key,'1'); p.warm=(p.warm||0)+1; boardSave(d);
+  boardRender(document.querySelector('.btab.on')?.dataset.btab);
+}
+document.addEventListener('DOMContentLoaded', ()=>{
+  const bw = document.getElementById('board-write');
+  if(bw) bw.onclick = ()=>{
+    const text = document.getElementById('board-text').value.trim();
+    if(!text){ alert('마음을 조금만 적어주세요 🙏'); return; }
+    const secret = document.getElementById('board-secret').checked;
+    let key = localStorage.getItem('eoullim_mykey');
+    if(!key){ key = 'k'+Date.now(); localStorage.setItem('eoullim_mykey', key); }
+    const d = boardData();
+    d.unshift({id:Date.now(), nick:document.getElementById('board-nick').value.trim(), text, secret, key, warm:0, date:new Date().toLocaleDateString('ko-KR')});
+    boardSave(d);
+    document.getElementById('board-text').value='';
+    document.getElementById('board-secret').checked=false;
+    boardRender();
+    alert(secret?'비밀글로 남겼어요. 이 브라우저에서만 볼 수 있어요 🔒':'마음이 남겨졌어요 🧡');
+  };
+  document.querySelectorAll('.btab').forEach(b=>{
+    b.onclick=()=>{ document.querySelectorAll('.btab').forEach(x=>{x.classList.remove('on');x.style.background='#fff';x.style.fontWeight='400'}); b.classList.add('on'); b.style.background='var(--cream2)'; b.style.fontWeight='700'; boardRender(b.dataset.btab); };
+  });
+  boardRender();
+
+  /* 신청곡 */
+  const PL = ['위로가 되는 곡 — 재생목록','따뜻한 발라드','잔잔한 피아노','힐링 팝'];
+  const plEl = document.getElementById('pl-list');
+  if(plEl) plEl.innerHTML = PL.map(x=>`<div style="padding:8px 12px;background:var(--cream2);border-radius:10px;margin:5px 0;font-size:13.5px">🎧 ${x}</div>`).join('');
+  function songs(){ return JSON.parse(localStorage.getItem('eoullim_songs')||'[]'); }
+  function songsRender(){
+    const el = document.getElementById('song-list'); if(!el) return;
+    const d = songs();
+    el.innerHTML = d.length ? d.slice(0,5).map(x=>`<div style="padding:9px 12px;background:var(--cream2);border-radius:10px;margin:5px 0;font-size:13.5px">🎶 <b>${esc(x.t)}</b>${x.w?` — ${esc(x.w)}`:''}</div>`).join('') : '<p style="font-size:12.5px;color:#9a8f80">첫 신청곡을 기다려요</p>';
+  }
+  const sb = document.getElementById('song-submit');
+  if(sb) sb.onclick = ()=>{
+    const t = document.getElementById('song-title').value.trim();
+    if(!t){ alert('노래 제목을 적어주세요 🎶'); return; }
+    const w = document.getElementById('song-why').value.trim();
+    const d = songs(); d.unshift({t, w, date:new Date().toLocaleDateString('ko-KR')});
+    localStorage.setItem('eoullim_songs', JSON.stringify(d.slice(0,30)));
+    document.getElementById('song-title').value=''; document.getElementById('song-why').value='';
+    songsRender();
+    alert('신청곡이 접수되었어요 🎶 플레이리스트에 반영할게요!');
+  };
+  songsRender();
+});
+
 /* ── 다국어 사전 (핵심 UI — 전체 문항은 KR 유지 후 순차 확장) ── */
 const I18N = {
   ko: {},
@@ -356,7 +500,7 @@ const TESTS = {
   phq: {
     name:"PHQ-9 우울 선별",
     qs:["기분이 가라앉거나 우울하거나 희망이 없다고 느꼈다","흥미나 즐거움을 잃었다 (평소 좋아하던 것도)","수면 문제 (잠들기 어렵거나, 자꾸 깨거나, 너무 잔다","피곤하거나 기운이 없다","식욕이 없거나 과식했다","내가 잘못했거나 실패자라고 느꼈다","신문이나 TV에 집중하기 어려웠다","말이 느어지거나 반대로 안절부절 못했다","죽는 것이 낫겠다고 생각했다"],
-    opts:["전혀<br>없음","며칠","일주일<br>이상","거의<br>매일"],
+    opts:["없음","며칠","일주일+","매일"],
     range:[0,3,0,3],
     interpret:s=>s<5?["good","지금은 괜찮아 보여요","지금의 균형을 잘 유지해보세요. 쉼터도 언제나 열려있어요."]:s<10?["warn","가벼운 우울 신호","몸과 마음이 보내는 신호일 수 있어요. 쉼터에서 차 한잔하며 이야기 나눠보는 건 어떨까요?"]:s<15?["warn","중등도 우설 신호","혼자 감당하기 벅찰 수 있어요. 상담사와 대화해보는 걸 권해요."]:["bad","우울 신호가 높아요","지금 마음이 많이 힘들었군요. 꼭 전문가와 이야기해주세요. 혼자가 아닙니다."],
     crisis:s=>s>=1 /* 문항9 선택시 */
@@ -364,14 +508,14 @@ const TESTS = {
   gad: {
     name:"GAD-7 불안 선별",
     qs:["신경이 예민하거나 불안하거나 조마조마하게 느꼈다","걱정을 멈추거나 조절할 수 없었다","특별한 이유 없이 과하게 걱정했다","편하게 있기 어려웠다","안절부절 못해서 가만히 있기 힘들었다","쉽게 짜증이 나거나 예민해졌다","안 좋은 일이 생길 것 같아 두려웠다"],
-    opts:["전혀<br>없음","며칠","일주일<br>이상","거의<br>매일"],
+    opts:["없음","며칠","일주일+","매일"],
     interpret:s=>s<5?["good","지금은 괜찮아 보여요","일상 속 작은 휴식으로 지금의 평온을 지켜가요."]:s<10?["warn","가벼운 불안 신호","긴장의 원인을 함께 찾아보면 좋아요. 쉼터 마음온도 프로그램을 추천해요."]:["bad","불안 신호가 높아요","마음이 많이 조마조마했겠어요. 상담을 통해 완화할 수 있어요 — 혼자 견디지 마세요."],
     crisis:s=>false
   },
   who: {
     name:"WHO-5 웰빙 지수",
     qs:["기분이 좋고 활기찼다","평온하고 편안했다","활기차고 활력이 넘쳤다","자고 일어나면 개운했다","일상이 즐거웠다"],
-    opts:["전혀<br>아니다","조금","보통","꽤","매우"],
+    opts:["아니다","조금","보통","꽤","매우"],
     invert:true,
     interpret:s=>s>=50?["good","웰빙이 좋아요","지금의 좋은 리듬을 이어가세요."]:s<29?["bad","웰빙이 많이 낮아요","요즘 많이 지쳐있을 수 있어요. 쉼터에서 쉬어가며 대화해보세요."]:["warn","웰빙이 낮은 편이에요","충전이 필요한 시기예요. 작은 휴식과 표현 활동을 권해요."],
     crisis:s=>false
