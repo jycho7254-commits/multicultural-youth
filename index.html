@@ -7,9 +7,10 @@
 <meta name="description" content="경기도 평택의 다문화청소년과 모든 청소년이 편히 쉬고, 표현하고, 상담받는 열린 공간">
 <style>
 :root{
-  --sage:#7a9e7e; --sage-dark:#5c7f60; --cream:#faf7f0; --cream2:#f2ede0;
-  --ink:#3a3a36; --sub:#6b6b64; --coral:#e8927c; --sky:#7fa8c9;
-  --radius:18px; --shadow:0 4px 24px rgba(90,110,90,.10);
+  /* 08-30 웜톤 팔레트 — 따뜻한 살구·테라코타·크림 */
+  --sage:#d98e6b; --sage-dark:#b96f4e; --cream:#fdf8f0; --cream2:#f9efe2;
+  --ink:#43372e; --sub:#7d6f60; --coral:#e07856; --sky:#e8a87c;
+  --radius:18px; --shadow:0 4px 24px rgba(180,120,80,.12);
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -27,7 +28,7 @@ nav{display:flex;align-items:center;justify-content:space-between;height:64px}
 .lang button{border:1px solid #ddd6c4;background:#fff;border-radius:8px;padding:4px 8px;font-size:12px;cursor:pointer;color:var(--sub)}
 .lang button.on{background:var(--sage);color:#fff;border-color:var(--sage)}
 /* 히어로 */
-.hero{padding:88px 0 72px;text-align:center;background:linear-gradient(180deg,var(--cream) 0%,#eef2e9 100%)}
+.hero{padding:88px 0 72px;text-align:center;background:linear-gradient(180deg,var(--cream) 0%,#f8ecdd 100%)}
 .hero h1{font-size:clamp(28px,5vw,44px);font-weight:800;letter-spacing:-1px;margin-bottom:18px}
 .hero h1 em{font-style:normal;color:var(--sage)}
 .hero p{font-size:clamp(15px,2vw,18px);color:var(--sub);max-width:560px;margin:0 auto 32px}
@@ -55,13 +56,13 @@ section{padding:72px 0}
 .place{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:center;background:#fff;border-radius:var(--radius);padding:36px;box-shadow:var(--shadow)}
 .place ul{list-style:none}
 .place li{padding:10px 0 10px 30px;position:relative;border-bottom:1px dashed #e8e2d2;font-size:15px}
-.place li:before{content:'🌿';position:absolute;left:0}
+.place li:before{content:'☕';position:absolute;left:0}
 .place .info{background:var(--cream2);border-radius:14px;padding:22px;font-size:14.5px}
 .place .info div{margin:7px 0}
 .place .info b{color:var(--sage-dark)}
 /* 프로그램 */
 .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px}
-.prog{background:#fff;border-radius:var(--radius);padding:26px;box-shadow:var(--shadow)}
+.prog{background:#fff;border-radius:var(--radius);padding:26px;box-shadow:var(--shadow);cursor:pointer;transition:.2s}.prog:hover{transform:translateY(-4px);box-shadow:0 8px 32px rgba(180,120,80,.18)}
 .prog h4{font-size:17px;margin-bottom:6px;color:var(--sage-dark)}
 .prog .for{font-size:12.5px;color:var(--coral);font-weight:bold;margin-bottom:10px}
 .prog p{font-size:14px;color:var(--sub);margin-bottom:12px}
@@ -127,7 +128,7 @@ footer a:hover{color:#fff}
 <body>
 <header>
   <nav class="wrap">
-    <div class="logo"><span class="mark">🍃</span><span data-i18n="logo">어울림 마음쉼터</span></div>
+    <div class="logo"><span class="mark">🧡</span><span data-i18n="logo">어울림 마음쉼터</span></div>
     <div class="nav-links">
       <a href="#shelter" data-i18n="nav1">쉼터</a>
       <a href="#programs" data-i18n="nav2">프로그램</a>
@@ -147,7 +148,7 @@ footer a:hover{color:#fff}
 <section class="hero">
   <div class="wrap">
     <h1 data-i18n="hero1">여기, <em>쉬어가도 괜찮은 곳</em></h1>
-    <p data-i18n="hero2">다문화 청소년, 그리고 모든 청소년을 위한 열린 쉼공간입니다. 아무런 예약도, 이유도 필요 없어요. 음악이 있고, 차가 있고, 당신의 이야기를 들어주는 사람이 있습니다.</p>
+    <p data-i18n="hero2">다문화 청소년, 그리고 모든 청소년을 위한 온라인 쉼공간입니다. 언제든, 어디서든. 음악이 있고, 따뜻한 문구가 있고, 당신의 이야기를 들어주는 사람이 있습니다.</p>
     <div class="btns">
       <a href="#check" class="btn primary" data-i18n="heroBtn1">🫶 3분 마음체크</a>
       <a href="#counsel" class="btn ghost" data-i18n="heroBtn2">상담 신청하기</a>
@@ -157,7 +158,7 @@ footer a:hover{color:#fff}
 
 <div class="wrap">
   <div class="cards">
-    <div class="card"><div class="ico">🏠</div><h3 data-i18n="card1t">쉼 (Drop-in)</h3><p data-i18n="card1d">방과후 아무 때나 들러서 쉬어가는 열린 공간. 조용히 있어도 되고, 수다 떨어도 됩니다.</p></div>
+    <div class="card"><div class="ico">🏠</div><h3 data-i18n="card1t">쉼 (Online)</h3><p data-i18n="card1d">24시간 열린 온라인 쉼터. 로그인 없이, 내 방에서 그대로. 조용히 있어도 되고 함께해도 됩니다.</p></div>
     <div class="card"><div class="ico">🎵</div><h3 data-i18n="card2t">표현 (Art)</h3><p data-i18n="card2d">합창, 음악, 미술로 마음을 표현하는 아트 프로그램. 잘하지 않아도 괜찮아요.</p></div>
     <div class="card"><div class="ico">💛</div><h3 data-i18n="card3t">나눔 (Care)</h3><p data-i18n="card3d">마음이 무거울 때, 혼자 갖지 말고 나눠요. 부담 없는 1회 상담부터 시작합니다.</p></div>
   </div>
@@ -165,36 +166,36 @@ footer a:hover{color:#fff}
 
 <section id="shelter">
   <div class="wrap">
-    <div class="sec-head"><span class="tag" data-i18n="s1tag">OPEN SPACE</span><h2 data-i18n="s1h">아무 때나 와서 쉬는 곳</h2><p data-i18n="s1p">예약도, 회원가입도, 이유도 필요 없습니다.</p></div>
+    <div class="sec-head"><span class="tag" data-i18n="s1tag">ONLINE SPACE</span><h2 data-i18n="s1h">언제든 접속하는 온라인 쉼터</h2><p data-i18n="s1p">내 방에서, 학교에서, 어디서든. 로그인도 가입도 없어요.</p></div>
     <div class="place">
       <ul>
-        <li data-i18n="s1l1">방과후 열린 쉼공간 — 조용한 방 + 함께하는 방</li>
-        <li data-i18n="s1l2">음료와 간식 제공 (무료)</li>
-        <li data-i18n="s1l3">듣는 사람이 항상 있습니다 — 대화는 선택</li>
-        <li data-i18n="s1l4">학교 숙제, 그냥 쉼, 잠깐의 은신 모두 OK</li>
-        <li data-i18n="s1l5">다국어 환영 (한/영/중/베트남어 지원)</li>
+        <li data-i18n="s1l1">24시간 열린 온라인 쉼방 — 음악·차·조명 있는 공간 감각</li>
+        <li data-i18n="s1l2">함께 듣는 플레이리스트 & 조용한 톡방 (부담 없는 익명 참여)</li>
+        <li data-i18n="s1l3">마음 주고받기 게시판 — 좋아요 대신 '따뜻해요'만 있습니다</li>
+        <li data-i18n="s1l4">심야에도 읽을 수 있는 위로의 문구와 마음챙김 오디오</li>
+        <li data-i18n="s1l5">다국어 지원 (한/EN/中/VI) — 어떤 언어로도 편하게</li>
       </ul>
       <div class="info">
-        <div><b data-i18n="s1i1t">운영시간</b><br><span data-i18n="s1i1v">평일 14:00~20:00 (방학 중 확대)</span></div>
-        <div><b data-i18n="s1i2t">장소</b><br><span data-i18n="s1i2v">경기도 평택시 평택5로 5, 302호 (아트인터치)</span></div>
-        <div><b data-i18n="s1i3t">연락</b><br>010-8889-4763</div>
+        <div><b data-i18n="s1i1t">이용 시간</b><br><span data-i18n="s1i1v">24시간 · 연중무휴 (실시간 프로그램은 평일 오후)</span></div>
+        <div><b data-i18n="s1i2t">이용 방법</b><br><span data-i18n="s1i2v">가입 없음 · 설치 없음 — 이 사이트가 곧 쉼터입니다</span></div>
+        <div><b data-i18n="s1i3t">실시간 모임</b><br>화·목 저녁 8시 온라인 쉼방</div>
       </div>
     </div>
   </div>
-</section>
+</section>>
 
 <section id="programs" style="background:var(--cream2)">
   <div class="wrap">
     <div class="sec-head"><span class="tag" data-i18n="s2tag">PROGRAMS</span><h2 data-i18n="s2h">표현하는 프로그램</h2><p data-i18n="s2p">잘하지 않아도 괜찮아요. 표현하는 것 자체가 치유입니다.</p></div>
     <div class="grid3">
-      <div class="prog"><h4 data-i18n="p1t">우리, 숨쉬다 (합착·노래)</h4><div class="for" data-i18n="p1f">전 청소년</div><p data-i18n="p1d">노래하며 서로의 소리를 듣는 연습. 함께 만드는 하모니 속에서 소속감과 자존감이 자랍니다.</p><div class="basis" data-i18n="p1b">근거: 표현적 예술치료 + 청소년 합창 정서교육 (Y-VOICE 운영 노하우)</div></div>
-      <div class="prog"><h4 data-i18n="p2t">둘의 색, 나의 색</h4><div class="for" data-i18n="p2f">다문화 청소년</div><p data-i18n="p2d">두 문화 사이의 나를 미술·음악로 탐색. 어느 쪽 하나만 고르지 않아도, 둘 다 나임을 발견하는 시간.</p><div class="basis" data-i18n="p2b">근거: Phinney 문화정체성 발달모델 (탐색→몰입 단계 지원)</div></div>
-      <div class="prog"><h4 data-i18n="p3t">마음온도 36.5</h4><div class="for" data-i18n="p3f">전 청소년</div><p data-i18n="p3d">음악 감상과 마음챙김으로 일상의 스트레스 온도를 낮추는 힐링 콘서트·워크숍.</p><div class="basis" data-i18n="p3b">근거: 마음챙김 기반 감정조절 (MBCT 원리)</div></div>
-      <div class="prog"><h4 data-i18n="p4t">방과후 쉼 스테이션</h4><div class="for" data-i18n="p4f">전 청소년</div><p data-i18n="p4d">학교 끝나고 갈 곳이 없을 때. 게임, 독서, 그냥 멍때리기까지 모두 환영.</p><div class="basis" data-i18n="p4b">근거: 자기결정성이론 — 자율적 휴식이 회복을 만든다</div></div>
-      <div class="prog"><h4 data-i18n="p5t">우리말·세계말 자랑</h4><div class="for" data-i18n="p5f">다문화 청소년</div><p data-i18n="p5d">내가 아는 언어를 자랑처럼 이야기하는 시간. 이중언어는 나의 힘입니다.</p><div class="basis" data-i18n="p5b">근거: 다중언어 능력의 긍정 재프레임 (자기효능감 강화)</div></div>
-      <div class="prog"><h4 data-i18n="p6t">가족과 함께 듣는 콘서트</h4><div class="for" data-i18n="p6f">청소년+가족</div><p data-i18n="p6d">부모와 함께 듣는 음악회. 세대와 문화의 벽을 음악으로 잇습니다.</p><div class="basis" data-i18n="p6b">근거: 가족응집성 강화 (예술 매개 부모-자녀 소통)</div></div>
-      <div class="prog"><h4 data-i18n="p7t">둘의 언어, 하나의 노래 (부모-자녀 공동)</h4><div class="for" data-i18n="p7f">다문화 가족</div><p data-i18n="p7d">엄마의 언어와 나의 언어를 한 곡에 담는 공동 작업. 음악을 통해 서로의 세계를 듣는 시간.</p><div class="basis" data-i18n="p7b">근거: 문화 중립 매개물 기반 부모-자녀 관계 회복 (연구: 예술치료 가족개입)</div></div>
-      <div class="prog"><h4 data-i18n="p8t">12주 치유의 여정 (집단 아르테라피)</h4><div class="for" data-i18n="p8f">심층 지원 희망</div><p data-i18n="p8d">사전-사후 심리검사로 변화를 함께 확인하는 12주 구조화 프로그램. 마음체크 점수가 높은 분 우선.</p><div class="basis" data-i18n="p8b">근거: 표준화 검사 기반 성과측정 + 집단미술치료 효과 연구 (한국미술치료학회지)</div></div>
+      <div class="prog"><h4 data-i18n="p1t" style="cursor:pointer" onclick="openProg(0)">우리, 숨쉬다 (합착·노래)</h4><div class="for" data-i18n="p1f">전 청소년</div><p data-i18n="p1d">노래하며 서로의 소리를 듣는 연습. 함께 만드는 하모니 속에서 소속감과 자존감이 자랍니다.</p></div>
+      <div class="prog"><h4 data-i18n="p2t" style="cursor:pointer" onclick="openProg(1)">둘의 색, 나의 색</h4><div class="for" data-i18n="p2f">다문화 청소년</div><p data-i18n="p2d">두 문화 사이의 나를 미술·음악로 탐색. 어느 쪽 하나만 고르지 않아도, 둘 다 나임을 발견하는 시간.</p></div>
+      <div class="prog"><h4 data-i18n="p3t" style="cursor:pointer" onclick="openProg(2)">마음온도 36.5</h4><div class="for" data-i18n="p3f">전 청소년</div><p data-i18n="p3d">음악 감상과 마음챙김으로 일상의 스트레스 온도를 낮추는 힐링 콘서트·워크숍.</p></div>
+      <div class="prog"><h4 data-i18n="p4t" style="cursor:pointer" onclick="openProg(3)">방과후 쉼 스테이션</h4><div class="for" data-i18n="p4f">전 청소년</div><p data-i18n="p4d">학교 끝나고 갈 곳이 없을 때. 게임, 독서, 그냥 멍때리기까지 모두 환영.</p></div>
+      <div class="prog"><h4 data-i18n="p5t" style="cursor:pointer" onclick="openProg(4)">우리말·세계말 자랑</h4><div class="for" data-i18n="p5f">다문화 청소년</div><p data-i18n="p5d">내가 아는 언어를 자랑처럼 이야기하는 시간. 이중언어는 나의 힘입니다.</p></div>
+      <div class="prog"><h4 data-i18n="p6t" style="cursor:pointer" onclick="openProg(5)">가족과 함께 듣는 콘서트</h4><div class="for" data-i18n="p6f">청소년+가족</div><p data-i18n="p6d">부모와 함께 듣는 음악회. 세대와 문화의 벽을 음악으로 잇습니다.</p></div>
+      <div class="prog"><h4 data-i18n="p7t" style="cursor:pointer" onclick="openProg(6)">둘의 언어, 하나의 노래 (부모-자녀 공동)</h4><div class="for" data-i18n="p7f">다문화 가족</div><p data-i18n="p7d">엄마의 언어와 나의 언어를 한 곡에 담는 공동 작업. 음악을 통해 서로의 세계를 듣는 시간.</p></div>
+      <div class="prog"><h4 data-i18n="p8t" style="cursor:pointer" onclick="openProg(7)">12주 치유의 여정 (집단 아르테라피)</h4><div class="for" data-i18n="p8f">심층 지원 희망</div><p data-i18n="p8d">사전-사후 심리검사로 변화를 함께 확인하는 12주 구조화 프로그램. 마음체크 점수가 높은 분 우선.</p></div>
     </div>
   </div>
 </section>
@@ -231,7 +232,7 @@ footer a:hover{color:#fff}
         <label data-i18n="f3">연락처/아이디 <span class="req">*</span></label>
         <input required placeholder="010-xxxx-xxxx 또는 카톡ID">
         <label data-i18n="f4">희망 상담 방식</label>
-        <select><option data-i18n="f4o1">대면 (평택 쉼터)</option><option data-i18n="f4o2">전화/온라인</option><option data-i18n="f4o3">상관없음</option></select>
+        <select><option data-i18n="f4o1">대면 상담 — 평택 오피스 (경기 평택시 평택5로 5, 302호)</option><option data-i18n="f4o2">온라인 상담 (화상/채팅)</option><option data-i18n="f4o3">전화 상담</option><option data-i18n="f4o4">상관없음</option></select>
         <label data-i18n="f5">이렇게 도와줬으면 해요 (자유롭게)</label>
         <textarea placeholder="미리 적지 않아도 괜찮아요. 공란으로 남겨두셔도 됩니다."></textarea>
         <p style="font-size:12px;color:#9a9a90;margin:12px 0 0" data-i18n="f6">* 보내주신 정보는 상담 연결 외 목적으로 사용되지 않으며, 비식별로 안전하게 처리됩니다.</p>
@@ -242,6 +243,8 @@ footer a:hover{color:#fff}
         <p data-i18n="sn1d">• 마음이 무거운데 뭔가 애매할 때<br>• 학교나 집에서 겪는 일을 나누고 싶을 때<br>• 문화·언어·친구 관계로 혼란스러울 때<br>• 그냥 조용히 상담해보고 싶을 때</p>
         <h4 data-i18n="sn2t">상담 흐름</h4>
         <p data-i18n="sn2d">1) 신청 → 2) 1~2일 내 연락 → 3) 첫 대화(30분, 부담 없이) → 4) 이후는 함께 결정</p>
+        <h4>📍 상담 장소</h4>
+        <p>대면: 평택 오피스 (평택5로 5, 302호) · 온라인: 화상/채팅 어디든</p>
         <h4 data-i18n="sn3t">비밀 보장</h4>
         <p data-i18n="sn3d">상담 내용은 안전하게 보호됩니다. 자·타침 위험 상황만 예외로 안전을 위해 도움을 요청할 수 있어요.</p>
       </div>
@@ -334,14 +337,16 @@ const I18N = {
     em1:"Khi khẩn cấp, đừng ở một mình",em2:"Phòng chống tự tử",em3:"Đường dây tuổi teen",em4:"Khẩn cấp"
   }
 };
+// 원문(한국어) 백업 — 첫 로드 시 1회 (08-30 언어 복귀 버그 수정)
+document.querySelectorAll('[data-i18n]').forEach(el=>{ el.dataset.orig=el.innerHTML; });
 document.querySelectorAll('.lang button').forEach(b=>{
   b.onclick=()=>{
     document.querySelectorAll('.lang button').forEach(x=>x.classList.remove('on'));
     b.classList.add('on');
-    const d=I18N[b.dataset.lang]||{};
+    const lang=b.dataset.lang;
+    const d=I18N[lang]||{};
     document.querySelectorAll('[data-i18n]').forEach(el=>{
-      const v=d[el.dataset.i18n];
-      if(v) el.innerHTML=v;
+      el.innerHTML = (lang==='ko') ? el.dataset.orig : (d[el.dataset.i18n] || el.dataset.orig);
     });
   };
 });
@@ -414,5 +419,5 @@ document.getElementById('counsel-form').onsubmit=e=>{
   alert('신청이 접종되었습니다 🌿 1~2일 내에 연락드릴게요. ( 데모 — 실제 전송은 전화 010-8889-4763 )');
 };
 </script>
-</body>
+<div id="prog-modal" style="display:none;position:fixed;inset:0;z-index:100;background:rgba(50,40,30,.55);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)this.style.display='none'"><div style="background:#fff;border-radius:20px;max-width:520px;width:100%;padding:32px;position:relative;max-height:86vh;overflow:auto"><button onclick="document.getElementById('prog-modal').style.display='none'" style="position:absolute;top:14px;right:14px;border:none;background:var(--cream2);width:34px;height:34px;border-radius:50%;font-size:16px;cursor:pointer">✕</button><h3 id="pm-title" style="font-size:21px;margin-bottom:14px;color:var(--sage-dark)"></h3><p id="pm-desc" style="font-size:15px;color:var(--sub);line-height:1.8;margin-bottom:18px"></p><a id="pm-video" href="#" target="_blank" rel="noopener" style="display:block;background:var(--sage);color:#fff;text-decoration:none;text-align:center;padding:13px;border-radius:12px;font-weight:bold">🎬 관련 영상 보기</a><a id="pm-apply" href="#counsel" onclick="document.getElementById('prog-modal').style.display='none'" style="display:block;text-align:center;margin-top:10px;color:var(--sage-dark);font-size:14px;text-decoration:underline">이 프로그램 문의하기</a></div></div><script>const PROG_DATA=[{"t": "우리, 숨쉬다 (합착·노래)", "d": "노래하며 서로의 소리를 듣는 시간입니다. 잘 부르지 못해도 괜찮아요 — 함께 만드는 하모니 속에서 소속감이 자라납니다. Y-VOICE 청소년합창단에서 검증한 방식으로 진행해요.", "q": "청소년 합창 지도"}, {"t": "둘의 색, 나의 색", "d": "두 문화 사이에서 자란 나를 미술과 음악으로 탐색하는 시간. 어느 쪽 하나만 고르지 않아도, 둘 다 나임을 발견합니다.", "q": "다문화 청소년 미술치료"}, {"t": "마음온도 36.5", "d": "음악 감상과 마음챙김으로 일상의 스트레스를 낮추는 힐링 콘서트·워크숍. 아트인터치의 대표 콘텐츠 [마음온도 36.5 콘서트]에서 확장된 프로그램입니다.", "q": "마음챙김 명상 음악"}, {"t": "방과후 쉼 스테이션", "d": "학교 끝나고 갈 곳이 없을 때 — 온라인 쉼방에서 게임, 독서, 그냥 멍때리기까지 모두 환영합니다.", "q": "청소년 방과후 프로그램"}, {"t": "우리말·세계말 자랑", "d": "내가 아는 언어를 자랑처럼 이야기하는 시간. 이중언어는 나의 힘입니다.", "q": "다문화 청소년 이야기"}, {"t": "가족과 함께 듣는 콘서트", "d": "부모와 함께 듣는 음악회. 세대와 문화의 벽을 음악으로 잇습니다.", "q": "가족 음악회"}, {"t": "둘의 언어, 하나의 노래 (부모-자녀 공동)", "d": "엄마의 언어와 나의 언어를 한 곡에 담는 공동 작업. 음악을 통해 서로의 세계를 듣습니다.", "q": "다문화가족 프로그램"}, {"t": "12주 치유의 여정 (집단 아르테라피)", "d": "사전-사후 심리검사로 변화를 함께 확인하는 12주 구조화 프로그램. 마음체크 점수가 높은 분을 우선으로 모십니다.", "q": "집단 미술치료"}];function openProg(i){const d=PROG_DATA[i];document.getElementById("pm-title").textContent=d.t;document.getElementById("pm-desc").textContent=d.d;document.getElementById("pm-video").href="https://www.youtube.com/results?search_query="+encodeURIComponent(d.q);document.getElementById("prog-modal").style.display="flex";}document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('prog-modal').style.display='none';});</script></body>
 </html>
