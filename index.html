@@ -194,10 +194,10 @@ footer a:hover{color:#fff}
     <div class="sec-head"><span class="tag">마음 나눔</span><h2>마음 주고받기 게시판</h2><p>좋아요 대신 '따뜻해요'만 있는 곳. 비밀글로 조용히 쓰고 싶을 때도.</p></div>
     <div class="board-box" style="max-width:680px;margin:0 auto;background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:26px">
       <div style="display:flex;gap:8px;margin-bottom:16px">
-        <input id="board-nick" placeholder="닉네임 (안 적어도 OK)" style="flex:1;padding:11px 14px;border:1.5px solid #e8dcc8;border-radius:10px;font-size:14px;background:var(--cream)">
+        <input id="board-nick" placeholder="닉네임 (안 적어도 OK)" ph-key="ph_nick" style="flex:1;padding:11px 14px;border:1.5px solid #e8dcc8;border-radius:10px;font-size:14px;background:var(--cream)">
         <label style="display:flex;align-items:center;gap:5px;font-size:13px;color:var(--sub);cursor:pointer;white-space:nowrap"><input type="checkbox" id="board-secret"> 비밀글</label>
       </div>
-      <textarea id="board-text" placeholder="마음을 적어보세요. 아무 말이라도 괜찮아요." style="width:100%;min-height:80px;padding:12px 14px;border:1.5px solid #e8dcc8;border-radius:10px;font-size:14.5px;font-family:inherit;background:var(--cream);resize:vertical"></textarea>
+      <textarea id="board-text" placeholder="마음을 적어보세요. 아무 말이라도 괜찮아요." ph-key="ph_heart" style="width:100%;min-height:80px;padding:12px 14px;border:1.5px solid #e8dcc8;border-radius:10px;font-size:14.5px;font-family:inherit;background:var(--cream);resize:vertical"></textarea>
       <button id="board-write" style="margin-top:12px;width:100%;padding:12px;background:var(--sage);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:bold;cursor:pointer">글 남기기 🧡</button>
       <div id="board-list" style="margin-top:22px"></div>
       <p style="font-size:12px;color:#9a8f80;margin-top:14px;text-align:center">* 비밀글은 작성한 브라우저에서만 보여요</p>
@@ -226,8 +226,8 @@ footer a:hover{color:#fff}
       <div class="prog" style="cursor:default">
         <h4>🎶 신청곡 남기기</h4>
         <p style="min-height:52px">여러분의 신청곡으로 플레이리스트가 채워져요.</p>
-        <input id="song-title" placeholder="노래 제목" style="width:100%;padding:11px 14px;border:1.5px solid #e8dcc8;border-radius:10px;font-size:14px;background:var(--cream);margin-top:6px">
-        <input id="song-why" placeholder="이 곡을 신청한 이유 (선택)" style="width:100%;padding:11px 14px;border:1.5px solid #e8dcc8;border-radius:10px;font-size:14px;background:var(--cream);margin-top:8px">
+        <input id="song-title" placeholder="노래 제목" ph-key="ph_song_t" style="width:100%;padding:11px 14px;border:1.5px solid #e8dcc8;border-radius:10px;font-size:14px;background:var(--cream);margin-top:6px">
+        <input id="song-why" placeholder="이 곡을 신청한 이유 (선택)" ph-key="ph_song_w" style="width:100%;padding:11px 14px;border:1.5px solid #e8dcc8;border-radius:10px;font-size:14px;background:var(--cream);margin-top:8px">
         <button id="song-submit" style="margin-top:10px;width:100%;padding:12px;background:var(--sage);color:#fff;border:none;border-radius:12px;font-size:14.5px;font-weight:bold;cursor:pointer">신청하기</button>
         <div id="song-list" style="margin-top:14px"></div>
       </div>
@@ -392,11 +392,11 @@ function boardRender(sort){
   list.innerHTML = shown.length ? shown.map(p=>`
     <div style="padding:14px;border-bottom:1px dashed #e8dcc8">
       <div style="display:flex;justify-content:space-between;font-size:12.5px;color:#9a8f80;margin-bottom:5px">
-        <span>${p.nick||'익명의 마음'} ${p.secret?'· 🔒비밀글':''}</span><span>${p.date}</span>
+        <span>${p.nick||(t('anon')||'익명의 마음')} ${p.secret?(t('secret_tag')||'· 🔒비밀글'):''}</span><span>${p.date}</span>
       </div>
       <p style="font-size:14.5px;margin-bottom:8px;white-space:pre-wrap">${esc(p.text)}</p>
-      <button onclick="addWarm(${p.id})" style="border:1.5px solid #e8dcc8;background:var(--cream);border-radius:16px;padding:5px 14px;font-size:13px;cursor:pointer">🧡 따뜻해요 ${p.warm||0}</button>
-    </div>`).join('') : '<p style="text-align:center;color:#9a8f80;font-size:14px;padding:18px">아직 첫 마음이 남겨지지 않았어요. 당신의 한마디가 첫 번째가 되어줄래요?</p>';
+      <button onclick="addWarm(${p.id})" style="border:1.5px solid #e8dcc8;background:var(--cream);border-radius:16px;padding:5px 14px;font-size:13px;cursor:pointer">${t('warm_btn')||'🧡 따뜻해요'} ${p.warm||0}</button>
+    </div>`).join('') : `<p style="text-align:center;color:#9a8f80;font-size:14px;padding:18px">${t('no_posts')||'아직 첫 마음이 남겨지지 않았어요. 당신의 한마디가 첫 번째가 되어줄래요?'}</p>`;
 }
 function esc(t){ const d=document.createElement('div'); d.textContent=t||''; return d.innerHTML; }
 function addWarm(id){
@@ -409,7 +409,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const bw = document.getElementById('board-write');
   if(bw) bw.onclick = ()=>{
     const text = document.getElementById('board-text').value.trim();
-    if(!text){ alert('마음을 조금만 적어주세요 🙏'); return; }
+    if(!text){ alert(t('need_text')||'마음을 조금만 적어주세요 🙏'); return; }
     const secret = document.getElementById('board-secret').checked;
     let key = localStorage.getItem('eoullim_mykey');
     if(!key){ key = 'k'+Date.now(); localStorage.setItem('eoullim_mykey', key); }
@@ -419,7 +419,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     document.getElementById('board-text').value='';
     document.getElementById('board-secret').checked=false;
     boardRender();
-    alert(secret?'비밀글로 남겼어요. 이 브라우저에서만 볼 수 있어요 🔒':'마음이 남겨졌어요 🧡');
+    alert(secret?(t('secret_ok')||'비밀글로 남겼어요. 이 브라우저에서만 볼 수 있어요 🔒'):(t('board_ok')||'마음이 남겨졌어요 🧡'));
   };
   document.querySelectorAll('.btab').forEach(b=>{
     b.onclick=()=>{ document.querySelectorAll('.btab').forEach(x=>{x.classList.remove('on');x.style.background='#fff';x.style.fontWeight='400'}); b.classList.add('on'); b.style.background='var(--cream2)'; b.style.fontWeight='700'; boardRender(b.dataset.btab); };
@@ -434,52 +434,342 @@ document.addEventListener('DOMContentLoaded', ()=>{
   function songsRender(){
     const el = document.getElementById('song-list'); if(!el) return;
     const d = songs();
-    el.innerHTML = d.length ? d.slice(0,5).map(x=>`<div style="padding:9px 12px;background:var(--cream2);border-radius:10px;margin:5px 0;font-size:13.5px">🎶 <b>${esc(x.t)}</b>${x.w?` — ${esc(x.w)}`:''}</div>`).join('') : '<p style="font-size:12.5px;color:#9a8f80">첫 신청곡을 기다려요</p>';
+    el.innerHTML = d.length ? d.slice(0,5).map(x=>`<div style="padding:9px 12px;background:var(--cream2);border-radius:10px;margin:5px 0;font-size:13.5px">🎶 <b>${esc(x.t)}</b>${x.w?` — ${esc(x.w)}`:''}</div>`).join('') : `<p style="font-size:12.5px;color:#9a8f80">${t('wait_songs')||'첫 신청곡을 기다려요'}</p>`;
   }
   const sb = document.getElementById('song-submit');
   if(sb) sb.onclick = ()=>{
-    const t = document.getElementById('song-title').value.trim();
-    if(!t){ alert('노래 제목을 적어주세요 🎶'); return; }
+    const title = document.getElementById('song-title').value.trim();
+    if(!title){ alert(t('need_song')||'노래 제목을 적어주세요 🎶'); return; }
     const w = document.getElementById('song-why').value.trim();
-    const d = songs(); d.unshift({t, w, date:new Date().toLocaleDateString('ko-KR')});
+    const d = songs(); d.unshift({t: title, w, date:new Date().toLocaleDateString('ko-KR')});
     localStorage.setItem('eoullim_songs', JSON.stringify(d.slice(0,30)));
     document.getElementById('song-title').value=''; document.getElementById('song-why').value='';
     songsRender();
-    alert('신청곡이 접수되었어요 🎶 플레이리스트에 반영할게요!');
+    alert(t('song_ok')||'신청곡이 접수되었어요 🎶 플레이리스트에 반영할게요!');
   };
   songsRender();
 });
 
+
+/* ── 동적 텍스트 번역 (v4) — alert/모달/검사 UI ── */
+const DYN = {
+ en:{need_all:'Please answer all questions 🙏',need_text:'Please write a little 🙏',need_song:'Please enter a song title 🎶',song_ok:'Song request received 🎶 We will add it to the playlist!',board_ok:'Your heart has been shared 🧡',secret_ok:'Saved as a secret note 🔒 Only visible in this browser',apply_ok:'Request received 🌿 We will contact you within 1-2 days. (Demo — actual: 010-8889-4763)',see_video:'🎬 Watch related video',ask_prog:'Ask about this program',ph_nick:'Nickname (optional)',ph_heart:'Write your heart. Anything is fine.',ph_song_t:'Song title',ph_song_w:'Why this song (optional)',no_posts:'No hearts shared yet. Could yours be the first?',wait_songs:'Waiting for the first song request',no_ans:'Unanswered',q0:'Not at all',q1:'Several days',q2:'More than a week',q3:'Nearly every day',w0:'Not at all',w1:'A little',w2:'Moderately',w3:'Quite',w4:'Very',res_of:'result',crisis_t:'💔 Are you having thoughts of hurting yourself?',crisis_d:'You can reach out right now — Suicide Prevention 1393 (24h) / Youth Line 1388. You are not alone.',score_of:'of',anon:'Anonymous heart',secret_tag:'· 🔒Secret',warm_btn:'🧡 Warm',all:'All',warm_tab:'Most warmed'},
+ zh:{need_all:'请回答所有问题 🙏',need_text:'请写下一点心情 🙏',need_song:'请输入歌曲名 🎶',song_ok:'已收到点歌 🎶 会加入播放列表！',board_ok:'心情已留下 🧡',secret_ok:'已保存为秘密留言 🔒 仅在此浏览器可见',apply_ok:'申请已接收 🌿 1-2天内联系您。（演示 — 实际: 010-8889-4763）',see_video:'🎬 观看相关视频',ask_prog:'咨询此活动',ph_nick:'昵称（可不填）',ph_heart:'写下你的心情。什么都可以。',ph_song_t:'歌曲名',ph_song_w:'点这首歌的理由（选填）',no_posts:'还没有留下心情。你的会是第一条吗？',wait_songs:'等待第一首点歌',no_ans:'未回答',q0:'完全没有',q1:'几天',q2:'一周以上',q3:'几乎每天',w0:'完全没有',w1:'一点',w2:'一般',w3:'相当',w4:'非常',res_of:'结果',crisis_t:'💔 你有伤害自己的想法吗？',crisis_d:'现在就可以联系 — 自杀预防 1393（24小时）/ 青少年热线 1388。你不是一个人。',score_of:'/',anon:'匿名心情',secret_tag:'· 🔒秘密',warm_btn:'🧡 温暖',all:'全部',warm_tab:'最多温暖'},
+ vi:{need_all:'Vui lòng trả lời tất cả câu hỏi 🙏',need_text:'Xin viết ra một chút 🙏',need_song:'Vui lòng nhập tên bài hát 🎶',song_ok:'Đã nhận yêu cầu bài hát 🎶 Sẽ thêm vào playlist!',board_ok:'Tâm tình đã được chia sẻ 🧡',secret_ok:'Đã lưu như lời nhắn kín 🔒 Chỉ thấy trên trình duyệt này',apply_ok:'Đã nhận đăng ký 🌿 Sẽ liên hệ trong 1-2 ngày. (Demo — thực tế: 010-8889-4763)',see_video:'🎬 Xem video liên quan',ask_prog:'Hỏi về chương trình này',ph_nick:'Biệt danh (không bắt buộc)',ph_heart:'Viết tâm tình của bạn. Điều gì cũng được.',ph_song_t:'Tên bài hát',ph_song_w:'Vì sao chọn bài này (không bắt buộc)',no_posts:'Chưa có tâm tình nào. Bạn sẽ là người đầu tiên chứ?',wait_songs:'Đang chờ bài hát đầu tiên',no_ans:'Chưa trả lời',q0:'Không hề',q1:'Vài ngày',q2:'Hơn một tuần',q3:'Gần như mỗi ngày',w0:'Không hề',w1:'Một chút',w2:'Trung bình',w3:'Khá',w4:'Rất',res_of:'kết quả',crisis_t:'💔 Bạn đang có ý nghĩ làm tổn thương mình sao?',crisis_d:'Bạn có thể liên hệ ngay — Phòng chống tự tử 1393 (24h) / Đường dây tuổi teen 1388. Bạn không một mình.',score_of:'/',anon:'Tâm tình ẩn danh',secret_tag:'· 🔒Kín',warm_btn:'🧡 Ấm áp',all:'Tất cả',warm_tab:'Nhiều ấm áp nhất'}
+};
+let CUR_LANG='ko';
+function t(k){ return (CUR_LANG!=='ko' && DYN[CUR_LANG] && DYN[CUR_LANG][k]) || null; }
+function applyDyn(){
+  document.querySelectorAll('[ph-key]').forEach(el=>{ const v=t(el.getAttribute('ph-key')); if(v) el.placeholder=v; });
+  document.querySelectorAll('[dyn-key]').forEach(el=>{ const v=t(el.getAttribute('dyn-key')); if(v) el.textContent=v; });
+  renderTest();
+}
+
 /* ── 다국어 사전 (핵심 UI — 전체 문항은 KR 유지 후 순차 확장) ── */
 const I18N = {
-  ko: {},
-  en: {
-    logo:"Eoullim Mind Shelter", nav1:"Shelter",nav2:"Programs",nav3:"Mind Check",nav4:"Counseling",nav5:"About",
-    hero1:"Here, it's okay to just <em>rest</em>", hero2:"An open rest space for multicultural youth and all teens. No reservation, no reason needed. There's music, tea, and someone who listens.",
-    heroBtn1:"🫶 3-min Mind Check", heroBtn2:"Request Counseling",
-    card1t:"Rest (Drop-in)",card1d:"An open space to drop by after school. Being quiet is fine, chatting too.",
-    card2t:"Express (Art)",card2d:"Express your heart through choir, music, and art. You don't have to be good.",
-    card3t:"Share (Care)",card3d:"When your heart is heavy, don't carry it alone. Start with one easy session.",
-    em1:"In crisis, don't be alone",em2:"Suicide Prevention",em3:"Youth Hotline",em4:"Emergency"
-  },
-  zh: {
-    logo:"和谐 心灵休憩处", nav1:"休憩所",nav2:"活动",nav3:"心灵检查",nav4:"商谈",nav5:"介绍",
-    hero1:"在这里，<em>休息也没关系</em>", hero2:"为多文化青少年和所有青少年开放的休息空间。不需要预约，也不需要理由。这里有音乐、茶，和愿意倾听你的人。",
-    heroBtn1:"🫶 3分钟心灵检查", heroBtn2:"申请商谈",
-    card1t:"休息 (Drop-in)",card1d:"放学后随时可以来休息的开放空间。安静也可以，聊天也可以。",
-    card2t:"表达 (艺术)",card2d:"通过合唱、音乐、美术表达内心。做得不好也没关系。",
-    card3t:"分享 (关怀)",card3d:"心情沉重时，不要独自承受。从一次轻松的商谈开始。",
-    em1:"危急时刻，请不要独自一人",em2:"自杀预防",em3:"青少年热线",em4:"紧急"
-  },
-  vi: {
-    logo:"Eoullim – Chốn nghỉ tâm hồn", nav1:"Nơi nghỉ",nav2:"Chương trình",nav3:"Kiểm tra tâm lý",nav4:"Tư vấn",nav5:"Giới thiệu",
-    hero1:"Nơi đây, <em>nghỉ ngơi cũng không sao</em>", hero2:"Không gian mở cho thanh thiếu niên đa văn hóa và mọi bạn trẻ. Không cần đặt lịch, không cần lý do. Có âm nhạc, trà, và người lắng nghe bạn.",
-    heroBtn1:"🫶 Kiểm tra 3 phút", heroBtn2:"Đăng ký tư vấn",
-    card1t:"Nghỉ ngơi",card1d:"Không gian mở sau giờ học. Im lặng cũng được, trò chuyện cũng được.",
-    card2t:"Biểu lộ (Nghệ thuật)",card2d:"Biểu đạt cảm xúc qua hợp xướng, âm nhạc, hội họa. Không cần giỏi.",
-    card3t:"Chia sẻ (Chăm sóc)",card3d:"Khi lòng nặng nề, đừng ôm một mình. Bắt đầu với một buổi nhẹ nhàng.",
-    em1:"Khi khẩn cấp, đừng ở một mình",em2:"Phòng chống tự tử",em3:"Đường dây tuổi teen",em4:"Khẩn cấp"
-  }
+ "en": {
+  "logo": "Eoullim Mind Shelter",
+  "nav1": "Shelter",
+  "nav2": "Programs",
+  "nav3": "Mind Check",
+  "nav4": "Counseling",
+  "nav5": "About",
+  "hero1": "Here, it's okay to just <em>rest</em>",
+  "hero2": "An online rest space for multicultural youth and all teens. Anytime, anywhere. There's music, warm words, and someone who listens to you.",
+  "heroBtn1": "🫶 3-min Mind Check",
+  "heroBtn2": "Request Counseling",
+  "card1t": "Rest (Online)",
+  "card1d": "A 24-hour open online shelter. No login needed, right from your room. Being quiet is fine, being together too.",
+  "card2t": "Express (Art)",
+  "card2d": "Express your heart through choir, music, and art. You don't have to be good.",
+  "card3t": "Share (Care)",
+  "card3d": "When your heart is heavy, don't carry it alone. Start with one easy session.",
+  "s1tag": "ONLINE SPACE",
+  "s1h": "An online shelter, anytime",
+  "s1p": "From your room, from school, anywhere. No login, no signup.",
+  "s1l1": "24-hour open lounge — music, tea, cozy space vibes",
+  "s1l2": "Shared playlists & quiet chat room (easy anonymous participation)",
+  "s1l3": "Heart exchange board — only \"warm\" buttons, no likes",
+  "s1l4": "Comforting words and mindfulness audio, even late at night",
+  "s1l5": "Multilingual (KR/EN/CN/VI) — feel free in any language",
+  "s1i1t": "Hours",
+  "s1i1v": "24/7, year-round (live programs on weekday evenings)",
+  "s1i2t": "How to join",
+  "s1i2v": "No signup, no install — this site IS the shelter",
+  "s1i3t": "Live gatherings",
+  "s2tag": "PROGRAMS",
+  "s2h": "Programs for expression",
+  "s2p": "You don't have to be good. Expressing itself heals.",
+  "p1t": "We, Breathe (Choir)",
+  "p1f": "All teens",
+  "p1d": "Listening to each other's voices through song. You don't have to sing well — belonging grows in the harmony we make together.",
+  "p2t": "Two Colors, My Color",
+  "p2f": "Multicultural youth",
+  "p2d": "Exploring me, grown between two cultures, through art and music. You do not have to pick just one - both are me.",
+  "p3t": "Mind Temperature 36.5",
+  "p3f": "All teens",
+  "p3d": "Healing concerts & workshops lowering daily stress with music and mindfulness.",
+  "p4t": "After-school Rest Station",
+  "p4f": "All teens",
+  "p4d": "When there's nowhere to go after school — games, reading, even just zoning out. All welcome.",
+  "p5t": "My Language, World Language",
+  "p5f": "Multicultural youth",
+  "p5d": "Talking about the languages you know like a showcase. Bilingualism is your power.",
+  "p6t": "Family Concert",
+  "p6f": "Teens + family",
+  "p6d": "A concert with parents. Music bridges generations and cultures.",
+  "p7t": "Two Languages, One Song",
+  "p7f": "Multicultural families",
+  "p7d": "A collaborative work putting mom's language and mine in one song. Hearing each other's worlds through music.",
+  "p8t": "12-Week Healing Journey",
+  "p8f": "Deep support",
+  "p8d": "A structured 12-week program with pre/post psychological assessment. Priority for high Mind Check scores.",
+  "s3tag": "SELF CHECK",
+  "s3h": "3-minute Mind Check",
+  "s3p": "Anonymously, easily. Results appear instantly. (Nothing is saved)",
+  "t1": "Depression (PHQ-9)",
+  "t2": "Anxiety (GAD-7)",
+  "t3": "Wellbeing (WHO-5)",
+  "btnOk": "See result",
+  "btnRe": "Try again",
+  "s3note": "※ This is a screening tool, not a diagnosis. It does not replace professional counseling.",
+  "s4tag": "COUNSELING",
+  "s4h": "Counseling request",
+  "s4p": "You can apply with a nickname. First conversation, no pressure.",
+  "f1": "Name or nickname",
+  "f2": "Contact method",
+  "f2o0": "Please choose",
+  "f2o1": "Phone call",
+  "f2o2": "Text message",
+  "f2o3": "KakaoTalk",
+  "f3": "Contact/ID",
+  "f4": "Preferred counseling type",
+  "f4o1": "In-person — Pyeongtaek Office",
+  "f4o2": "Online (video/chat)",
+  "f4o3": "Phone",
+  "f4o4": "Either is fine",
+  "f5": "How can we help? (freely)",
+  "f6": "* Your information is used only for counseling contact and processed anonymously.",
+  "fBtn": "Send request",
+  "sn1t": "We recommend this if",
+  "sn1d": "• Feeling heavy but unclear why<br>• Want to share school or home struggles<br>• Confused about culture, language, or friends<br>• Just want to try counseling quietly",
+  "sn2t": "How it goes",
+  "sn2d": "1) Apply → 2) Contact within 1-2 days → 3) First talk (30 min, easy) → 4) We decide together",
+  "sn3t": "Confidentiality",
+  "sn3d": "Counseling content is protected. Only self/other-harm risk is an exception, for safety.",
+  "s5tag": "ABOUT",
+  "s5h": "People together",
+  "s5p": "Connecting hearts through art",
+  "ft1": "An open space for multicultural youth and all teens to rest, express, and receive counseling. Run by Art in Touch Social Cooperative.",
+  "ft2t": "Find us",
+  "ft3t": "In an urgent moment",
+  "em1": "In crisis, don't be alone",
+  "em2": "Suicide Prevention",
+  "em3": "Youth Hotline",
+  "em4": "Emergency"
+ },
+ "zh": {
+  "logo": "和谐 心灵休憩处",
+  "nav1": "休憩所",
+  "nav2": "活动",
+  "nav3": "心灵检查",
+  "nav4": "商谈",
+  "nav5": "介绍",
+  "hero1": "在这里，<em>休息也没关系</em>",
+  "hero2": "为多文化青少年和所有青少年开放的线上休憩空间。任何时候、任何地方。这里有音乐、温暖的文字，和愿意倾听你的人。",
+  "heroBtn1": "🫶 3分钟心灵检查",
+  "heroBtn2": "申请商谈",
+  "card1t": "休息 (线上)",
+  "card1d": "24小时开放的线上休憩所。无需登录，就在你的房间。安静也可以，一起也可以。",
+  "card2t": "表达 (艺术)",
+  "card2d": "通过合唱、音乐、美术表达内心。不需要做得很好。",
+  "card3t": "分享 (关怀)",
+  "card3d": "心情沉重时，不要独自承受。从一次轻松的对话开始。",
+  "s1tag": "线上空间",
+  "s1h": "随时可以来的线上休憩所",
+  "s1p": "在房间、在学校、在任何地方。无需注册、无需安装。",
+  "s1l1": "24小时开放的休憩客厅 — 音乐、茶、舒适的氛围",
+  "s1l2": "一起听的播放列表和安静聊天室（轻松匿名参与）",
+  "s1l3": "心灵交流留言板 — 只有\"温暖\"按钮，没有点赞",
+  "s1l4": "深夜也能读到的安慰文字和正念音频",
+  "s1l5": "多语言支持（韩/英/中/越）— 用任何语言都自在",
+  "s1i1t": "开放时间",
+  "s1i1v": "24小时 · 全年无休（实时活动在平日晚上）",
+  "s1i2t": "参与方式",
+  "s1i2v": "无需注册、无需安装 — 这个网站就是休憩所",
+  "s1i3t": "实时聚会",
+  "s2tag": "活动",
+  "s2h": "表达的活动",
+  "s2p": "做得不好也没关系。表达本身就是治愈。",
+  "p1t": "我们，呼吸（合唱）",
+  "p1f": "所有青少年",
+  "p1d": "通过唱歌练习倾听彼此的声音。唱得不好也没关系 — 在一起创造的合声中，归属感会成长。",
+  "p2t": "两种颜色，我的颜色",
+  "p2f": "多文化青少年",
+  "p2d": "用美术和音乐探索在两种文化之间长大的我。不必只选一边 — 两边都是我。",
+  "p3t": "心灵温度36.5",
+  "p3f": "所有青少年",
+  "p3d": "用音乐欣赏和正念降低日常压力的治愈演唱会和工作坊。",
+  "p4t": "放学后休憩站",
+  "p4f": "所有青少年",
+  "p4d": "放学后没有去处的时候 — 游戏、阅读、发呆都可以。",
+  "p5t": "我的语言·世界的语言",
+  "p5f": "多文化青少年",
+  "p5d": "像展示一样讲述你会的语言。双语是你的力量。",
+  "p6t": "家庭音乐会",
+  "p6f": "青少年+家人",
+  "p6d": "和父母一起听的音乐会。音乐连接世代与文化。",
+  "p7t": "两种语言，一首歌",
+  "p7f": "多文化家庭",
+  "p7d": "把妈妈的语言和我的语言放进一首歌。通过音乐听见彼此的世界。",
+  "p8t": "12周治愈之旅",
+  "p8f": "深度支持",
+  "p8d": "有前后心理测评的结构化12周项目。心灵检查分数高者优先。",
+  "s3tag": "自我检查",
+  "s3h": "3分钟心灵检查",
+  "s3p": "匿名、轻松。结果立即显示。（不会保存）",
+  "t1": "忧郁 (PHQ-9)",
+  "t2": "焦虑 (GAD-7)",
+  "t3": "幸福感 (WHO-5)",
+  "btnOk": "查看结果",
+  "btnRe": "重新测试",
+  "s3note": "※ 本检查是筛选工具，不是诊断。不能替代专业商谈。",
+  "s4tag": "商谈",
+  "s4h": "申请商谈",
+  "s4p": "可以用昵称申请。第一次对话，轻松开始。",
+  "f1": "名字或昵称",
+  "f2": "联系方式",
+  "f2o0": "请选择",
+  "f2o1": "电话",
+  "f2o2": "短信",
+  "f2o3": "KakaoTalk",
+  "f3": "电话/ID",
+  "f4": "希望商谈方式",
+  "f4o1": "面对面 — 平泽办公室",
+  "f4o2": "线上（视频/聊天）",
+  "f4o3": "电话",
+  "f4o4": "都可以",
+  "f5": "希望能这样帮助我（自由填写）",
+  "f6": "* 您的信息仅用于商谈联系，匿名安全处理。",
+  "fBtn": "发送申请",
+  "sn1t": "推荐给这样的你",
+  "sn1d": "• 心情沉重但说不清为什么<br>• 想聊聊学校或家里的事<br>• 对文化、语言、朋友关系感到困惑<br>• 只想安静地试试商谈",
+  "sn2t": "流程",
+  "sn2d": "1) 申请 → 2) 1-2天内联系 → 3) 第一次对话（30分钟，轻松） → 4) 之后一起决定",
+  "sn3t": "保密",
+  "sn3d": "商谈内容受到保护。只有自伤/伤人风险是例外，为了安全会寻求帮助。",
+  "s5tag": "介绍",
+  "s5h": "一起的人们",
+  "s5p": "用艺术连接心灵",
+  "ft1": "为多文化青少年和所有青少年提供休息、表达、商谈的开放空间。由Art in Touch社会合作社运营。",
+  "ft2t": "来访路线",
+  "ft3t": "紧急时刻",
+  "em1": "危急时刻，请不要独自一人",
+  "em2": "自杀预防",
+  "em3": "青少年热线",
+  "em4": "紧急"
+ },
+ "vi": {
+  "logo": "Eoullim – Chốn nghỉ tâm hồn",
+  "nav1": "Nơi nghỉ",
+  "nav2": "Chương trình",
+  "nav3": "Kiểm tra tâm lý",
+  "nav4": "Tư vấn",
+  "nav5": "Giới thiệu",
+  "hero1": "Nơi đây, <em>nghỉ ngơi cũng không sao</em>",
+  "hero2": "Không gian nghỉ ngơi trực tuyến cho thanh thiếu niên đa văn hóa và mọi bạn trẻ. Mọi lúc, mọi nơi. Có âm nhạc, những lời ấm áp, và người lắng nghe bạn.",
+  "heroBtn1": "🫶 Kiểm tra 3 phút",
+  "heroBtn2": "Đăng ký tư vấn",
+  "card1t": "Nghỉ ngơi (Online)",
+  "card1d": "Không gian mở 24 giờ. Không cần đăng nhập, ngay tại phòng bạn. Im lặng cũng được, cùng nhau cũng được.",
+  "card2t": "Biểu lộ (Nghệ thuật)",
+  "card2d": "Biểu đạt cảm xúc qua hợp xướng, âm nhạc, hội họa. Không cần giỏi.",
+  "card3t": "Chia sẻ (Chăm sóc)",
+  "card3d": "Khi lòng nặng nề, đừng ôm một mình. Bắt đầu với một buổi nhẹ nhàng.",
+  "s1tag": "KHÔNG GIAN ONLINE",
+  "s1h": "Chốn nghỉ online mọi lúc",
+  "s1p": "Từ phòng bạn, từ trường, ở bất cứ đâu. Không đăng ký, không cài đặt.",
+  "s1l1": "Phòng khách mở 24 giờ — nhạc, trà, cảm giác ấm áp",
+  "s1l2": "Playlist cùng nghe & phòng chat yên tĩnh (tham gia ẩn danh)",
+  "s1l3": "Bảng chia sẻ tâm hồn — chỉ có nút \"ấm áp\", không có like",
+  "s1l4": "Lời an ủi và audio thiền dù là đêm khuya",
+  "s1l5": "Đa ngôn ngữ (Hàn/Anh/Trung/Việt) — thoải mái bằng ngôn ngữ nào",
+  "s1i1t": "Giờ mở cửa",
+  "s1i1v": "24/7, cả năm (chương trình trực các tối trong tuần)",
+  "s1i2t": "Cách tham gia",
+  "s1i2v": "Không đăng ký, không cài đặt — website này chính là nơi nghỉ",
+  "s1i3t": "Gặp gỡ trực tiếp",
+  "s2tag": "CHƯƠNG TRÌNH",
+  "s2h": "Chương trình biểu đạt",
+  "s2p": "Không cần giỏi. Chính việc biểu đạt mang lại chữa lành.",
+  "p1t": "Chúng ta, thở (Hợp xướng)",
+  "p1f": "Mọi bạn trẻ",
+  "p1d": "Luyện tập lắng nghe giọng của nhau qua hát. Hát không hay cũng được — cảm giác thuộc về lớn dần trong hòa âm cùng nhau tạo ra.",
+  "p2t": "Hai màu, màu của tôi",
+  "p2f": "Thanh thiếu niên đa văn hóa",
+  "p2d": "Khám phá mình — lớn lên giữa hai nền văn hóa — qua mỹ thuật và âm nhạc. Không phải chọn một — cả hai đều là mình.",
+  "p3t": "Nhiệt độ tâm hồn 36.5",
+  "p3f": "Mọi bạn trẻ",
+  "p3d": "Concert & workshop chữa lành, giảm stress bằng âm nhạc và chánh niệm.",
+  "p4t": "Trạm nghỉ sau giờ học",
+  "p4f": "Mọi bạn trẻ",
+  "p4d": "Khi không có chỗ đi sau giờ học — game, đọc sách, ngẩn ngơ cũng được.",
+  "p5t": "Ngôn ngữ của tôi, ngôn ngữ thế giới",
+  "p5f": "Thanh thiếu niên đa văn hóa",
+  "p5d": "Kể về những ngôn ngữ bạn biết như một màn trình diễn. Song ngữ là sức mạnh của bạn.",
+  "p6t": "Concert gia đình",
+  "p6f": "Bạn trẻ + gia đình",
+  "p6d": "Concert cùng bố mẹ. Âm nhạc kết nối thế hệ và văn hóa.",
+  "p7t": "Hai ngôn ngữ, một bài hát",
+  "p7f": "Gia đình đa văn hóa",
+  "p7d": "Cùng sáng tác đưa tiếng của mẹ và của mình vào một bài hát. Nghe thế giới của nhau qua âm nhạc.",
+  "p8t": "Hành trình chữa lành 12 tuần",
+  "p8f": "Hỗ trợ sâu",
+  "p8d": "Chương trình 12 tuần có cấu trúc, đánh giá tâm lý trước-sau. Ưu tiên điểm kiểm tra cao.",
+  "s3tag": "TỰ KIỂM TRA",
+  "s3h": "Kiểm tra tâm lý 3 phút",
+  "s3p": "Ẩn danh, nhẹ nhàng. Kết quả hiện ngay. (Không lưu lại)",
+  "t1": "Trầm cảm (PHQ-9)",
+  "t2": "Lo âu (GAD-7)",
+  "t3": "Phúc lợi (WHO-5)",
+  "btnOk": "Xem kết quả",
+  "btnRe": "Làm lại",
+  "s3note": "※ Đây là công cụ sàng lọc, không phải chẩn đoán. Không thay thế tư vấn chuyên nghiệp.",
+  "s4tag": "TƯ VẤN",
+  "s4h": "Đăng ký tư vấn",
+  "s4p": "Có thể đăng ký bằng biệt danh. Buổi đầu tiên, nhẹ nhàng.",
+  "f1": "Tên hoặc biệt danh",
+  "f2": "Cách liên hệ",
+  "f2o0": "Vui lòng chọn",
+  "f2o1": "Gọi điện",
+  "f2o2": "Tin nhắn",
+  "f2o3": "KakaoTalk",
+  "f3": "Số điện thoại/ID",
+  "f4": "Hình thức tư vấn mong muốn",
+  "f4o1": "Trực tiếp — Văn phòng Pyeongtaek",
+  "f4o2": "Online (video/chat)",
+  "f4o3": "Điện thoại",
+  "f4o4": "Đều được",
+  "f5": "Mong được giúp như thế nào (tự do)",
+  "f6": "* Thông tin chỉ dùng để liên hệ tư vấn, xử lý ẩn danh an toàn.",
+  "fBtn": "Gửi đăng ký",
+  "sn1t": "Phù hợp nếu bạn",
+  "sn1d": "• Lòng nặng nề mà không rõ vì sao<br>• Muốn chia sẻ chuyện trường/lớp hoặc gia đình<br>• Bối rối về văn hóa, ngôn ngữ, bạn bè<br>• Chỉ muốn thử tư vấn một cách yên tĩnh",
+  "sn2t": "Quy trình",
+  "sn2d": "1) Đăng ký → 2) Liên hệ trong 1-2 ngày → 3) Buổi đầu (30 phút, nhẹ nhàng) → 4) Cùng quyết định",
+  "sn3t": "Bảo mật",
+  "sn3d": "Nội dung tư vấn được bảo vệ. Chỉ nguy cơ tự hại/lạm hại là ngoại lệ, vì an toàn.",
+  "s5tag": "GIỚI THIỆU",
+  "s5h": "Những người đồng hành",
+  "s5p": "Kết nối tâm hồn qua nghệ thuật",
+  "ft1": "Không gian mở cho thanh thiếu niên đa văn hóa và mọi bạn trẻ nghỉ ngơi, biểu đạt, tư vấn. Vận hành bởi Art in Touch.",
+  "ft2t": "Đến chỗ chúng tôi",
+  "ft3t": "Khi khẩn cấp",
+  "em1": "Khi khẩn cấp, đừng ở một mình",
+  "em2": "Phòng chống tự tử",
+  "em3": "Đường dây tuổi teen",
+  "em4": "Khẩn cấp"
+ }
 };
 // 원문(한국어) 백업 — 첫 로드 시 1회 (08-30 언어 복귀 버그 수정)
 document.querySelectorAll('[data-i18n]').forEach(el=>{ el.dataset.orig=el.innerHTML; });
@@ -488,10 +778,12 @@ document.querySelectorAll('.lang button').forEach(b=>{
     document.querySelectorAll('.lang button').forEach(x=>x.classList.remove('on'));
     b.classList.add('on');
     const lang=b.dataset.lang;
+    CUR_LANG=lang;
     const d=I18N[lang]||{};
     document.querySelectorAll('[data-i18n]').forEach(el=>{
       el.innerHTML = (lang==='ko') ? el.dataset.orig : (d[el.dataset.i18n] || el.dataset.orig);
     });
+    applyDyn();
   };
 });
 
@@ -500,7 +792,7 @@ const TESTS = {
   phq: {
     name:"PHQ-9 우울 선별",
     qs:["기분이 가라앉거나 우울하거나 희망이 없다고 느꼈다","흥미나 즐거움을 잃었다 (평소 좋아하던 것도)","수면 문제 (잠들기 어렵거나, 자꾸 깨거나, 너무 잔다","피곤하거나 기운이 없다","식욕이 없거나 과식했다","내가 잘못했거나 실패자라고 느꼈다","신문이나 TV에 집중하기 어려웠다","말이 느어지거나 반대로 안절부절 못했다","죽는 것이 낫겠다고 생각했다"],
-    opts:["없음","며칠","일주일+","매일"],
+    opts:["q0","q1","q2","q3"],
     range:[0,3,0,3],
     interpret:s=>s<5?["good","지금은 괜찮아 보여요","지금의 균형을 잘 유지해보세요. 쉼터도 언제나 열려있어요."]:s<10?["warn","가벼운 우울 신호","몸과 마음이 보내는 신호일 수 있어요. 쉼터에서 차 한잔하며 이야기 나눠보는 건 어떨까요?"]:s<15?["warn","중등도 우설 신호","혼자 감당하기 벅찰 수 있어요. 상담사와 대화해보는 걸 권해요."]:["bad","우울 신호가 높아요","지금 마음이 많이 힘들었군요. 꼭 전문가와 이야기해주세요. 혼자가 아닙니다."],
     crisis:s=>s>=1 /* 문항9 선택시 */
@@ -508,14 +800,14 @@ const TESTS = {
   gad: {
     name:"GAD-7 불안 선별",
     qs:["신경이 예민하거나 불안하거나 조마조마하게 느꼈다","걱정을 멈추거나 조절할 수 없었다","특별한 이유 없이 과하게 걱정했다","편하게 있기 어려웠다","안절부절 못해서 가만히 있기 힘들었다","쉽게 짜증이 나거나 예민해졌다","안 좋은 일이 생길 것 같아 두려웠다"],
-    opts:["없음","며칠","일주일+","매일"],
+    opts:["q0","q1","q2","q3"],
     interpret:s=>s<5?["good","지금은 괜찮아 보여요","일상 속 작은 휴식으로 지금의 평온을 지켜가요."]:s<10?["warn","가벼운 불안 신호","긴장의 원인을 함께 찾아보면 좋아요. 쉼터 마음온도 프로그램을 추천해요."]:["bad","불안 신호가 높아요","마음이 많이 조마조마했겠어요. 상담을 통해 완화할 수 있어요 — 혼자 견디지 마세요."],
     crisis:s=>false
   },
   who: {
     name:"WHO-5 웰빙 지수",
     qs:["기분이 좋고 활기찼다","평온하고 편안했다","활기차고 활력이 넘쳤다","자고 일어나면 개운했다","일상이 즐거웠다"],
-    opts:["아니다","조금","보통","꽤","매우"],
+    opts:["w0","w1","w2","w3","w4"],
     invert:true,
     interpret:s=>s>=50?["good","웰빙이 좋아요","지금의 좋은 리듬을 이어가세요."]:s<29?["bad","웰빙이 많이 낮아요","요즘 많이 지쳐있을 수 있어요. 쉼터에서 쉬어가며 대화해보세요."]:["warn","웰빙이 낮은 편이에요","충전이 필요한 시기예요. 작은 휴식과 표현 활동을 권해요."],
     crisis:s=>false
@@ -525,10 +817,12 @@ let curTest='phq', answers={};
 function renderTest(){
   const t=TESTS[curTest];
   answers={};
+  const OT={q0:['없음','q0'],q1:['며칠','q1'],q2:['일주일+','q2'],q3:['매일','q3'],w0:['아니다','w0'],w1:['조금','w1'],w2:['보통','w2'],w3:['꽤','w3'],w4:['매우','w4']};
+  function optLabel(key){ const v=window.t(OT[key]?OT[key][1]:key); return v || (OT[key]?OT[key][0]:key); }
   document.getElementById('questions').innerHTML=t.qs.map((q,i)=>`
     <div class="q"><p>${i+1}. ${q}</p>
     <div class="opts">${t.opts.map((o,j)=>`
-      <label><input type="radio" name="q${i}" value="${j}" onchange="answers[${i}]=${j}"><span>${o}</span></label>`).join('')}
+      <label><input type="radio" name="q${i}" value="${j}" onchange="answers[${i}]=${j}"><span>${optLabel(o)}</span></label>`).join('')}
     </div></div>`).join('');
   document.getElementById('result').className='result';
   document.getElementById('result').innerHTML='';
@@ -541,18 +835,18 @@ document.querySelectorAll('.tabs button').forEach(b=>{
 });
 document.getElementById('btn-reset').onclick=renderTest;
 document.getElementById('btn-submit').onclick=()=>{
-  const t=TESTS[curTest];
+  const T=TESTS[curTest];
   const n=Object.keys(answers).length;
-  if(n<t.qs.length){alert('모든 문항에 답해주세요 🙏');return;}
+  if(n<T.qs.length){alert(t('need_all')||'모든 문항에 답해주세요 🙏');return;}
   let score=0;
-  for(let i=0;i<t.qs.length;i++) score+=t.invert?answers[i]:answers[i];
-  const pct = t.invert?Math.round(score/20*100):score;
-  const [cls,title,desc]=t.interpret(pct);
+  for(let i=0;i<T.qs.length;i++) score+=T.invert?answers[i]:answers[i];
+  const pct = T.invert?Math.round(score/20*100):score;
+  const [cls,title,desc]=T.interpret(pct);
   const box=document.getElementById('result');
   let crisis='';
-  if(curTest==='phq'&&answers[8]>0){crisis=`<div class="crisis"><b>💔 마음이 많이 아픈 생각을 하고 계신가요?</b><br>지금 바로 연락할 수 있어요 — <a href="tel:1393"><b>자살예방상담 1393</b></a> (24시간) / <a href="tel:1388">청소년전화 1388</a>. 당신은 혼자가 아닙니다.</div>`;}
+  if(curTest==='phq'&&answers[8]>0){crisis=`<div class="crisis"><b>${t('crisis_t')||'💔 마음이 많이 아픈 생각을 하고 계신가요?'}</b><br>${t('crisis_d')||'지금 바로 연락할 수 있어요'} — <a href="tel:1393"><b>자살예방상담 1393</b></a> (24시간) / <a href="tel:1388">청소년전화 1388</a>. 당신은 혼자가 아닙니다.</div>`;}
   box.className='result show '+cls;
-  box.innerHTML=`<h4>${t.name} 결과</h4><div class="score">${t.invert?pct+'점 / 100':score+'점 / '+(t.qs.length*3)}</div><h4>${title}</h4><p style="font-size:14.5px;color:var(--sub)">${desc}</p>${crisis}<p style="font-size:12.5px;margin-top:12px;color:#9a9a90">이 결과는 저장되지 않으며, 브라우저를 닫으면 사라져요.</p>`;
+  box.innerHTML=`<h4>${T.name} ${t('res_of')||'결과'}</h4><div class="score">${T.invert?pct+'점 / 100':score+'점 / '+(T.qs.length*3)}</div><h4>${title}</h4><p style="font-size:14.5px;color:var(--sub)">${desc}</p>${crisis}<p style="font-size:12.5px;margin-top:12px;color:#9a9a90">이 결과는 저장되지 않으며, 브라우저를 닫으면 사라져요.</p>`;
   box.scrollIntoView({behavior:'smooth',block:'center'});
 };
 renderTest();
@@ -560,8 +854,8 @@ renderTest();
 /* 상담 폼 — 데모 알림 (Phase 2에서 Supabase 연결) */
 document.getElementById('counsel-form').onsubmit=e=>{
   e.preventDefault();
-  alert('신청이 접종되었습니다 🌿 1~2일 내에 연락드릴게요. ( 데모 — 실제 전송은 전화 010-8889-4763 )');
+  alert(t('apply_ok')||'신청이 접수되었습니다 🌿 1~2일 내에 연락드릴게요.');
 };
 </script>
-<div id="prog-modal" style="display:none;position:fixed;inset:0;z-index:100;background:rgba(50,40,30,.55);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)this.style.display='none'"><div style="background:#fff;border-radius:20px;max-width:520px;width:100%;padding:32px;position:relative;max-height:86vh;overflow:auto"><button onclick="document.getElementById('prog-modal').style.display='none'" style="position:absolute;top:14px;right:14px;border:none;background:var(--cream2);width:34px;height:34px;border-radius:50%;font-size:16px;cursor:pointer">✕</button><h3 id="pm-title" style="font-size:21px;margin-bottom:14px;color:var(--sage-dark)"></h3><p id="pm-desc" style="font-size:15px;color:var(--sub);line-height:1.8;margin-bottom:18px"></p><a id="pm-video" href="#" target="_blank" rel="noopener" style="display:block;background:var(--sage);color:#fff;text-decoration:none;text-align:center;padding:13px;border-radius:12px;font-weight:bold">🎬 관련 영상 보기</a><a id="pm-apply" href="#counsel" onclick="document.getElementById('prog-modal').style.display='none'" style="display:block;text-align:center;margin-top:10px;color:var(--sage-dark);font-size:14px;text-decoration:underline">이 프로그램 문의하기</a></div></div><script>const PROG_DATA=[{"t": "우리, 숨쉬다 (합착·노래)", "d": "노래하며 서로의 소리를 듣는 시간입니다. 잘 부르지 못해도 괜찮아요 — 함께 만드는 하모니 속에서 소속감이 자라납니다. Y-VOICE 청소년합창단에서 검증한 방식으로 진행해요.", "q": "청소년 합창 지도"}, {"t": "둘의 색, 나의 색", "d": "두 문화 사이에서 자란 나를 미술과 음악으로 탐색하는 시간. 어느 쪽 하나만 고르지 않아도, 둘 다 나임을 발견합니다.", "q": "다문화 청소년 미술치료"}, {"t": "마음온도 36.5", "d": "음악 감상과 마음챙김으로 일상의 스트레스를 낮추는 힐링 콘서트·워크숍. 아트인터치의 대표 콘텐츠 [마음온도 36.5 콘서트]에서 확장된 프로그램입니다.", "q": "마음챙김 명상 음악"}, {"t": "방과후 쉼 스테이션", "d": "학교 끝나고 갈 곳이 없을 때 — 온라인 쉼방에서 게임, 독서, 그냥 멍때리기까지 모두 환영합니다.", "q": "청소년 방과후 프로그램"}, {"t": "우리말·세계말 자랑", "d": "내가 아는 언어를 자랑처럼 이야기하는 시간. 이중언어는 나의 힘입니다.", "q": "다문화 청소년 이야기"}, {"t": "가족과 함께 듣는 콘서트", "d": "부모와 함께 듣는 음악회. 세대와 문화의 벽을 음악으로 잇습니다.", "q": "가족 음악회"}, {"t": "둘의 언어, 하나의 노래 (부모-자녀 공동)", "d": "엄마의 언어와 나의 언어를 한 곡에 담는 공동 작업. 음악을 통해 서로의 세계를 듣습니다.", "q": "다문화가족 프로그램"}, {"t": "12주 치유의 여정 (집단 아르테라피)", "d": "사전-사후 심리검사로 변화를 함께 확인하는 12주 구조화 프로그램. 마음체크 점수가 높은 분을 우선으로 모십니다.", "q": "집단 미술치료"}];function openProg(i){const d=PROG_DATA[i];document.getElementById("pm-title").textContent=d.t;document.getElementById("pm-desc").textContent=d.d;document.getElementById("pm-video").href="https://www.youtube.com/results?search_query="+encodeURIComponent(d.q);document.getElementById("prog-modal").style.display="flex";}document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('prog-modal').style.display='none';});</script></body>
+<div id="prog-modal" style="display:none;position:fixed;inset:0;z-index:100;background:rgba(50,40,30,.55);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)this.style.display='none'"><div style="background:#fff;border-radius:20px;max-width:520px;width:100%;padding:32px;position:relative;max-height:86vh;overflow:auto"><button onclick="document.getElementById('prog-modal').style.display='none'" style="position:absolute;top:14px;right:14px;border:none;background:var(--cream2);width:34px;height:34px;border-radius:50%;font-size:16px;cursor:pointer">✕</button><h3 id="pm-title" style="font-size:21px;margin-bottom:14px;color:var(--sage-dark)"></h3><p id="pm-desc" style="font-size:15px;color:var(--sub);line-height:1.8;margin-bottom:18px"></p><a id="pm-video" href="#" target="_blank" rel="noopener" style="display:block;background:var(--sage);color:#fff;text-decoration:none;text-align:center;padding:13px;border-radius:12px;font-weight:bold" dyn-key="see_video">🎬 관련 영상 보기</a><a id="pm-apply" href="#counsel" onclick="document.getElementById('prog-modal').style.display='none'" style="display:block;text-align:center;margin-top:10px;color:var(--sage-dark);font-size:14px;text-decoration:underline" dyn-key="ask_prog">이 프로그램 문의하기</a></div></div><script>const PROG_DATA=[{"t": "우리, 숨쉬다 (합착·노래)", "d": "노래하며 서로의 소리를 듣는 시간입니다. 잘 부르지 못해도 괜찮아요 — 함께 만드는 하모니 속에서 소속감이 자라납니다. Y-VOICE 청소년합창단에서 검증한 방식으로 진행해요.", "q": "청소년 합창 지도"}, {"t": "둘의 색, 나의 색", "d": "두 문화 사이에서 자란 나를 미술과 음악으로 탐색하는 시간. 어느 쪽 하나만 고르지 않아도, 둘 다 나임을 발견합니다.", "q": "다문화 청소년 미술치료"}, {"t": "마음온도 36.5", "d": "음악 감상과 마음챙김으로 일상의 스트레스를 낮추는 힐링 콘서트·워크숍. 아트인터치의 대표 콘텐츠 [마음온도 36.5 콘서트]에서 확장된 프로그램입니다.", "q": "마음챙김 명상 음악"}, {"t": "방과후 쉼 스테이션", "d": "학교 끝나고 갈 곳이 없을 때 — 온라인 쉼방에서 게임, 독서, 그냥 멍때리기까지 모두 환영합니다.", "q": "청소년 방과후 프로그램"}, {"t": "우리말·세계말 자랑", "d": "내가 아는 언어를 자랑처럼 이야기하는 시간. 이중언어는 나의 힘입니다.", "q": "다문화 청소년 이야기"}, {"t": "가족과 함께 듣는 콘서트", "d": "부모와 함께 듣는 음악회. 세대와 문화의 벽을 음악으로 잇습니다.", "q": "가족 음악회"}, {"t": "둘의 언어, 하나의 노래 (부모-자녀 공동)", "d": "엄마의 언어와 나의 언어를 한 곡에 담는 공동 작업. 음악을 통해 서로의 세계를 듣습니다.", "q": "다문화가족 프로그램"}, {"t": "12주 치유의 여정 (집단 아르테라피)", "d": "사전-사후 심리검사로 변화를 함께 확인하는 12주 구조화 프로그램. 마음체크 점수가 높은 분을 우선으로 모십니다.", "q": "집단 미술치료"}];function openProg(i){const d=PROG_DATA[i];document.getElementById("pm-title").textContent=d.t;document.getElementById("pm-desc").textContent=d.d;document.getElementById("pm-video").href="https://www.youtube.com/results?search_query="+encodeURIComponent(d.q);document.getElementById("prog-modal").style.display="flex";}document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('prog-modal').style.display='none';});</script></body>
 </html>
