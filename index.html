@@ -19,12 +19,14 @@ body{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;color:var(--in
 /* 헤더 */
 header{position:sticky;top:0;z-index:50;background:rgba(250,247,240,.92);backdrop-filter:blur(10px);border-bottom:1px solid #e8e2d2}
 @media(max-width:820px){
-
+  .resp-grid{grid-template-columns:1fr!important}
   .hero{padding:44px 0 48px}
   .hero h1{font-size:26px;letter-spacing:-.5px;margin-bottom:12px}
   .hero p{font-size:14.5px;margin-bottom:22px}
-  .btns .btn{padding:12px 20px;font-size:14.5px
-
+  .btns .btn{padding:12px 20px;font-size:14.5px}
+}
+header{position:sticky}
+@media(max-width:820px){
   header.compact .logo span:last-child, header.compact .lang{display:none}
   header.compact nav{padding:2px 0}
 }
@@ -199,7 +201,7 @@ footer a:hover{color:#fff}
         <li data-i18n="s1l1"><b>24시간 열린 온라인 쉼방</b><br><span class="li-sub">- 음악, 차, 행복이 있는 공간</span></li>
         <li data-i18n="s1l2"><b>함께 듣는 플레이리스트 & 조용한 톡방</b><br><span class="li-sub">- 부담 없는 익명 참여</span></li>
         <li data-i18n="s1l3"><b>마음 주고받기 게시판</b><br><span class="li-sub">- 좋아요 대신 '따뜻해요'만 있습니다</span></li>
-        <li data-i18n="s1l4"><b>심야의 위로</b><br><span class="li-sub">- 언제든 읽을 수 있는 따뜻한 문구와 마음챙김 오디오</span></li>
+        <li data-i18n="s1l4"><b>심야의 위로</b><br><span class="li-sub">- 따뜻한 문구와<br>- 마음챙김 오디오</span></li>
         <li data-i18n="s1l5"><b>다국어 지원 (한/EN/中/VI)</b><br><span class="li-sub">- 어떤 언어로도 편하게</span></li>
       </ul>
       <div class="info">
@@ -214,6 +216,11 @@ footer a:hover{color:#fff}
 <section id="board" style="background:var(--cream2)">
   <div class="wrap">
     <div class="sec-head"><span class="tag">마음 나눔</span><h2>마음 주고받기 게시판</h2><p>좋아요 대신 '따뜻해요'만 있는 곳. 비밀글로 조용히 쓰고 싶을 때도.</p></div>
+    <!-- 오늘의 따뜻함 (v9) — 매일 08:00 갱신 -->
+    <div id="daily-warm" style="max-width:680px;margin:0 auto 26px;background:linear-gradient(135deg,#fdf3e7,#f9e8d8);border:1.5px solid #eed9c0;border-radius:16px;padding:22px 24px;text-align:center">
+      <div style="font-size:12.5px;font-weight:bold;color:var(--coral);letter-spacing:1px;margin-bottom:10px">☀️ 오늘의 따뜻함 <span id="daily-warm-date" style="color:#b8a890;font-weight:normal"></span></div>
+      <p id="daily-warm-text" style="font-size:16.5px;line-height:1.75;color:var(--ink);font-weight:bold"></p>
+    </div>
     <div class="board-box" style="max-width:680px;margin:0 auto;background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:26px">
       <div style="display:flex;gap:8px;margin-bottom:16px">
         <input id="board-nick" placeholder="닉네임 (안 적어도 OK)" ph-key="ph_nick" style="flex:1;padding:11px 14px;border:1.5px solid #e8dcc8;border-radius:10px;font-size:14px;background:var(--cream)">
@@ -286,15 +293,15 @@ footer a:hover{color:#fff}
       <!-- 설문자 익명 정보 (v8) — 고위험 조기 발견용, 선택 -->
       <div id="resp-info" style="margin:18px 0;padding:16px;background:var(--cream2);border-radius:12px">
         <p style="font-size:13.5px;font-weight:bold;color:var(--sage-dark);margin-bottom:10px" data-i18n="riT">💌 결과를 나중에도 돌아볼 수 있어요 (선택)</p>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <input id="resp-nick" placeholder="닉네임/이름 (선택)" ph-key="ph_r_nick" style="padding:10px 12px;border:1.5px solid #e8dcc8;border-radius:9px;font-size:13.5px;background:#fff">
-          <select id="resp-age" style="padding:10px 12px;border:1.5px solid #e8dcc8;border-radius:9px;font-size:13.5px;background:#fff">
+        <div class="resp-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <input id="resp-nick" placeholder="닉네임/이름 (선택)" ph-key="ph_r_nick" style="padding:10px 12px;border:1.5px solid #e8dcc8;border-radius:9px;font-size:13.5px;background:#fff;min-width:0;width:100%">
+          <select id="resp-age" style="padding:10px 12px;border:1.5px solid #e8dcc8;border-radius:9px;font-size:13.5px;background:#fff;min-width:0;width:100%">
             <option value="">나이대 (선택)</option>
             <option>14세 미만</option><option>14~16세</option><option>17~19세</option>
             <option>20대</option><option>30대 이상</option>
           </select>
         </div>
-        <input id="resp-contact" placeholder="연락처 (선택 — 점수가 높을 때만 연락드려요)" ph-key="ph_r_contact" style="width:100%;margin-top:8px;padding:10px 12px;border:1.5px solid #e8dcc8;border-radius:9px;font-size:13.5px;background:#fff">
+        <input id="resp-contact" placeholder="연락처 (선택 — 점수가 높을 때만 연락드려요)" ph-key="ph_r_contact" style="width:100%;margin-top:8px;padding:10px 12px;border:1.5px solid #e8dcc8;border-radius:9px;font-size:13.5px;background:#fff;min-width:0;box-sizing:border-box">
         <label style="display:flex;gap:7px;align-items:flex-start;margin-top:10px;font-size:12.5px;color:var(--sub);cursor:pointer">
           <input type="checkbox" id="resp-consent" style="margin-top:2px">
           <span data-i18n="riC">개인정보 수집·이용에 동의합니다 (자세히 보기)</span>
@@ -434,6 +441,55 @@ function renderPlaylists(){
   const list = PL_I18N[CUR_LANG] || PL_I18N.ko;
   plEl.innerHTML = list.map(x=>`<a href="https://music.youtube.com/search?q=${encodeURIComponent(x[1])}" target="_blank" rel="noopener" style="display:block;padding:9px 12px;background:var(--cream2);border-radius:10px;margin:5px 0;font-size:13.5px;color:var(--ink);text-decoration:none">${x[2]} ${x[0]} <span style="color:var(--sage-dark);font-size:11.5px">▶ ${CUR_LANG==='ko'?'유튜브뮤직':'YouTube Music'}</span></a>`).join('');
 }
+
+/* ── 오늘의 따뜻함 (v9) — 날짜 기반 선택, 매일 08:00 갱신 ── */
+const WARM_QUOTES = [
+  "당신이 숨 쉬는 것만으로도 이미 충분히 잘하고 있는 거예요.",
+  "오늘 힘들었다고 말할 수 있는 당신이 대단해요.",
+  "괜찮아질 거예요. 지금 아닌 것 같아도, 분명 괜찮아질 거예요.",
+  "혼자가 아니에요. 이 곳에 늘 누군가가 있어요.",
+  "천천히 가도 괜찮아요. 급할 필요 없어요.",
+  "당신의 존재가 누군가에게는 위로가 되고 있어요.",
+  "실패해도 괜찮아요. 다시 시작할 수 있는 힘이 당신 안에 있어요.",
+  "오늘 하루도 버텨낸 당신에게 박수를 보내요.",
+  "마음이 지친 날엔 쉬어가는 것도 잘하는 거예요.",
+  "누구와 비교하지 않아도 돼요. 당신은 당신만의 속도가 있어요.",
+  "울어도 괜찮아요. 눈물은 마음을 씻어주는 비 같은 거예요.",
+  "작은 기쁨도 기쁨이에요. 오늘의 작은 좋았던 일을 떠올려보세요.",
+  "내일은 내일의 해가 떠요. 오늘 못한 일, 내일해도 괜찮아요.",
+  "당신을 사랑하는 사람들이 곁에 있어요.",
+  "완벽하지 않아도 충분해요. 그대로의 당신이 좋아요.",
+  "지나온 하루를 돌아보며, 스스로에게 따뜻한 말을 건네주세요.",
+  "쉼표를 찍는 하루가 되기를. 문장이 끝나지 않았으니까요.",
+  "햇살이 스며드는 오후처럼, 당신의 마음에도 온기가 스며들기를.",
+  "걱정하는 마음도 당신을 소중하게 여기는 증거예요.",
+  "오늘의 당신에게 필요한 건 휴식일지도 몰라요.",
+  "스스로를 칭찬해주세요. 살아내는 것만으로도 대단한 일이에요.",
+  "변하지 않는 하루는 없어요. 좋은 날도 올 거예요.",
+  "당신의 웃음을 기다리는 사람이 있어요.",
+  "고마운 존재라는 걸 잊지 마세요.",
+  "지금 이 순간에도 누군가는 당신을 응원하고 있어요.",
+  "하루의 끝에서 스스로에게 따뜻한 차 한 잔을 건네주세요.",
+  "몸이 보내는 신호에 귀 기울여주세요. 쉬고 싶다면 쉬어가세요.",
+  "어제의 당신보다 오늘의 당신이 더 많은 걸 겪었어요. 그걸로 충분해요.",
+  "무거운 마음도 언젠가는 가벼워져요. 조금만 기다려주세요.",
+  "당신은 혼자 견디고 있지 않아요. 이곳에서 함께해요.",
+  "작은 용기도 용기예요. 오늘 어떤 작은 용기를 냈나요?"
+];
+(function renderDailyWarm(){
+  const el = document.getElementById('daily-warm-text');
+  const de = document.getElementById('daily-warm-date');
+  if(!el) return;
+  // KST 기준 오늘 날짜 (08:00 이전이면 전날 것 유지)
+  const now = new Date();
+  const kst = new Date(now.getTime() + (9*60 - (-now.getTimezoneOffset()))*60000);
+  const hour = kst.getHours();
+  const base = new Date(kst);
+  if(hour < 8) base.setDate(base.getDate() - 1); // 8시 전에는 어제 인용
+  const ymd = base.getFullYear()*10000 + (base.getMonth()+1)*100 + base.getDate();
+  el.textContent = WARM_QUOTES[ymd % WARM_QUOTES.length];
+  de.textContent = '· ' + (base.getMonth()+1) + '/' + base.getDate();
+})();
 /* ── 탭 뷰 전환 (08-30 v3) — 세션당 유지 ── */
 const VIEW_SECS = ['shelter','board','music','programs','check','counsel','about'];
 const HOME_EXTRAS = ['hero-sec','cards-sec'];
@@ -600,7 +656,7 @@ const I18N = {
   "s1l1": "<b>24-hour open online lounge</b><br><span class='li-sub'>- A space with music, tea, and happiness</span>",
   "s1l2": "<b>Shared playlists & quiet chat room</b><br><span class='li-sub'>- Easy anonymous participation</span>",
   "s1l3": "<b>Heart exchange board</b><br><span class='li-sub'>- Only 'warm' buttons, no likes</span>",
-  "s1l4": "<b>Late-night comfort</b><br><span class='li-sub'>- Warm words and mindfulness audio, anytime</span>",
+  "s1l4": "<b>Late-night comfort</b><br><span class='li-sub'>- Warm words and<br>- mindfulness audio</span>",
   "s1l5": "<b>Multilingual (KR/EN/CN/VI)</b><br><span class='li-sub'>- Feel free in any language</span>",
   "s1i1t": "Hours",
   "s1i1v": "24/7, year-round (live programs on weekday evenings)",
@@ -705,7 +761,7 @@ const I18N = {
   "s1l1": "<b>24小时开放的线上休憩客厅</b><br><span class='li-sub'>- 有音乐、茶和幸福的空间</span>",
   "s1l2": "<b>一起听的播放列表和安静聊天室</b><br><span class='li-sub'>- 轻松匿名参与</span>",
   "s1l3": "<b>心灵交流留言板</b><br><span class='li-sub'>- 只有'温暖'按钮，没有点赞</span>",
-  "s1l4": "<b>深夜的安慰</b><br><span class='li-sub'>- 随时能读到的温暖文字和正念音频</span>",
+  "s1l4": "<b>深夜的安慰</b><br><span class='li-sub'>- 温暖的文字和<br>- 正念音频</span>",
   "s1l5": "<b>多语言支持（韩/英/中/越）</b><br><span class='li-sub'>- 用任何语言都自在</span>",
   "s1i1t": "开放时间",
   "s1i1v": "24小时 · 全年无休（实时活动在平日晚上）",
@@ -810,7 +866,7 @@ const I18N = {
   "s1l1": "<b>Phòng khách mở 24 giờ</b><br><span class='li-sub'>- Không gian có nhạc, trà và hạnh phúc</span>",
   "s1l2": "<b>Playlist cùng nghe & phòng chat yên tĩnh</b><br><span class='li-sub'>- Tham gia ẩn danh dễ dàng</span>",
   "s1l3": "<b>Bảng chia sẻ tâm hồn</b><br><span class='li-sub'>- Chỉ có nút 'ấm áp', không có like</span>",
-  "s1l4": "<b>Sự an ủi đêm khuya</b><br><span class='li-sub'>- Lời ấm áp và audio thiền mọi lúc</span>",
+  "s1l4": "<b>Sự an ủi đêm khuya</b><br><span class='li-sub'>- Lời ấm áp và<br>- audio thiền</span>",
   "s1l5": "<b>Đa ngôn ngữ (Hàn/Anh/Trung/Việt)</b><br><span class='li-sub'>- Thoải mái bằng ngôn ngữ nào</span>",
   "s1i1t": "Giờ mở cửa",
   "s1i1v": "24/7, cả năm (chương trình trực các tối trong tuần)",
