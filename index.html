@@ -84,8 +84,8 @@ section{padding:72px 0}
 .tabs button.on{border-color:var(--sage);background:var(--sage);color:#fff;font-weight:bold}
 .q{margin:18px 0;padding:16px;background:var(--cream2);border-radius:12px}
 .q p{font-size:15px;margin-bottom:10px;font-weight:bold}
-.opts{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
-.test5 .opts{grid-template-columns:repeat(5,1fr)}
+.opts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:6px;min-width:0}
+.test5 .opts{grid-template-columns:repeat(5,minmax(0,1fr))!important}
 .opts label{font-size:12px;text-align:center;padding:9px 2px;background:#fff;border:2px solid #e8e2d2;border-radius:8px;cursor:pointer;transition:.15s;white-space:nowrap}
 .opts label:hover{border-color:var(--sage)}
 .opts input{display:none}
@@ -143,7 +143,6 @@ footer a:hover{color:#fff}
   .nav-links a{padding:8px 4px;font-size:13px;white-space:nowrap;border-radius:10px;background:var(--cream2);text-align:center;overflow:hidden;text-overflow:ellipsis}
   .place,.counsel{grid-template-columns:1fr}
   footer .cols{grid-template-columns:1fr}
-  .opts{grid-template-columns:repeat(3,1fr)}
   section{padding:52px 0}
   .emergency{font-size:12px;gap:14px}
 }
@@ -234,7 +233,7 @@ footer a:hover{color:#fff}
         <h4>🎧 오늘의 플레이리스트</h4>
         <p style="min-height:52px">지금 이 순간, 다른 누군가와 듣는 위로의 곡들.</p>
         <div id="pl-list" style="margin:10px 0"></div>
-        <a href="https://music.youtube.com/search?q=%EC%9C%84%EB%A1%9C%EB%8A%94+%ED%9E%88%EB%93%A0+%EA%B3%A1" target="_blank" rel="noopener" style="color:var(--sage-dark);font-size:13.5px;text-decoration:underline">전체 재생목록 열기 →</a>
+        <a href="https://music.youtube.com/search?q=%EC%9C%84%EB%A1%9C+%EB%85%B8%EB%9E%98+%ED%94%8C%EB%A0%88%EC%9D%B4%EB%A6%AC%EC%8A%A4%ED%8A%B8" target="_blank" rel="noopener" style="color:var(--sage-dark);font-size:13.5px;text-decoration:underline">전체 재생목록 열기 →</a>
       </div>
       <div class="prog" style="cursor:default">
         <h4>💬 온라인 쉼방 (톡방)</h4>
@@ -333,9 +332,9 @@ footer a:hover{color:#fff}
         <p style="font-size:14.5px;color:var(--sub)">문화체육관광부 인가 예술기반 휴먼서비스센터. 교육·상담·공연 콘텐츠로 현대인의 정신건강 회복을 지원합니다. 청소년합창단 Y-VOICE 창단, 평택호스피스와의 예술치유 협력, 수원평화나비 수요문화제 주관 등 지역과 함께해왔습니다. [숨,쉬다], [마음온도 36.5 콘서트]가 대표 콘텐츠입니다.</p>
       </div>
       <div class="info">
-        <div><b>대표</b><br>김혜영 (이사장)</div>
+        <div><b>대표</b><br>박소영 (이사장)</div>
         <div><b>소재지</b><br>경기도 평택시 평택5로 5, 302호</div>
-        <div><b>연락</b><br>010-8889-4763</div>
+        <div><b>연락</b><br>010-6410-0146</div>
         <div><b>블로그</b><br><a href="https://blog.naver.com/hanulsoriart" style="color:var(--sage-dark)">아트인터치 네이버 블로그 →</a></div>
       </div>
     </div>
@@ -358,7 +357,7 @@ footer a:hover{color:#fff}
     <div>
       <h5 data-i18n="ft2t">찾아오시는 길</h5>
       <p>경기도 평택시 평택5로 5, 302호</p>
-      <p>010-8889-4763</p>
+      <p>010-6410-0146</p>
       <a href="https://blog.naver.com/hanulsoriart">blog.naver.com/hanulsoriart</a>
     </div>
     <div>
@@ -378,6 +377,28 @@ footer a:hover{color:#fff}
 </div>
 
 <script>
+
+/* ── 게시판 백엔드 (v7) — Supabase 연동, 미설정 시 localStorage 폴백 ──
+   활성화: 아래 두 줄에 형의 Supabase URL/anon키 입력 + supabase_setup.sql 실행 */
+const BOARD_DB_URL = '';  // 예: https://csenbounuattwcivyuho.supabase.co
+const BOARD_DB_KEY = '';  // 예: sb_publishable_xxx 또는 anon key
+const DB_ON = BOARD_DB_URL && BOARD_DB_KEY;
+async function dbSelect(){
+  if(!DB_ON) return null;
+  const r = await fetch(BOARD_DB_URL + '/rest/v1/eoullim_board_public?order=created_at.desc&limit=50', {
+    headers: {'apikey': BOARD_DB_KEY, 'Authorization': 'Bearer ' + BOARD_DB_KEY}
+  });
+  return r.ok ? r.json() : null;
+}
+async function dbInsert(payload){
+  if(!DB_ON) return false;
+  const r = await fetch(BOARD_DB_URL + '/rest/v1/eoullim_board', {
+    method: 'POST',
+    headers: {'apikey': BOARD_DB_KEY, 'Authorization': 'Bearer ' + BOARD_DB_KEY, 'Content-Type': 'application/json', 'Prefer': 'return-minimal'},
+    body: JSON.stringify(payload)
+  });
+  return r.ok;
+}
 /* ── 탭 뷰 전환 (08-30 v3) — 세션당 유지 ── */
 const VIEW_SECS = ['shelter','board','music','programs','check','counsel','about'];
 const HOME_EXTRAS = ['hero-sec','cards-sec'];
@@ -411,22 +432,35 @@ window.addEventListener('load', ()=>{
 });
 
 /* ── 마음 게시판 (localStorage — Phase 2에서 Supabase 전환) ── */
-function boardData(){ return JSON.parse(localStorage.getItem('eoullim_board')||'[]'); }
+let BOARD_REMOTE = null; // 원격 게시글 캐시
+async function loadBoard(){
+  if(!DB_ON) return;
+  const rows = await dbSelect();
+  if(rows) BOARD_REMOTE = rows.map(r=>({
+    id:r.id, nick:r.nick, text:r.text===null?'':(r.text||''), secret:r.secret, key:r.owner_key,
+    warm:r.warm||0, date:(r.created_at||'').slice(0,10)
+  }));
+}
+function boardData(){
+  if(BOARD_REMOTE) return BOARD_REMOTE;
+  return JSON.parse(localStorage.getItem('eoullim_board')||'[]');
+}
 function boardSave(d){ localStorage.setItem('eoullim_board', JSON.stringify(d.slice(0,50))); }
 function boardRender(sort){
   const list = document.getElementById('board-list');
   if(!list) return;
   let d = boardData();
   if(sort==='warm') d = d.slice().sort((a,b)=>b.warm-a.warm);
-  d.forEach(post=>{ if(post.secret) post._show = (post.key===localStorage.getItem('eoullim_mykey')); else post._show=true; });
-  const shown = d.filter(x=>x._show);
-  list.innerHTML = shown.length ? shown.map(p=>`
+  d.forEach(post=>{ post._mine = !post.secret || (post.key===localStorage.getItem('eoullim_mykey')); });
+  list.innerHTML = d.length ? d.map(p=>`
     <div style="padding:14px;border-bottom:1px dashed #e8dcc8">
       <div style="display:flex;justify-content:space-between;font-size:12.5px;color:#9a8f80;margin-bottom:5px">
         <span>${p.nick||(t('anon')||'익명의 마음')} ${p.secret?(t('secret_tag')||'· 🔒비밀글'):''}</span><span>${p.date}</span>
       </div>
-      <p style="font-size:14.5px;margin-bottom:8px;white-space:pre-wrap">${esc(p.text)}</p>
-      <button onclick="addWarm(${p.id})" style="border:1.5px solid #e8dcc8;background:var(--cream);border-radius:16px;padding:5px 14px;font-size:13px;cursor:pointer">${t('warm_btn')||'🧡 따뜻해요'} ${p.warm||0}</button>
+      ${p._mine
+        ? `<p style="font-size:14.5px;margin-bottom:8px;white-space:pre-wrap">${esc(p.text)}</p>`
+        : `<p style="font-size:14px;margin-bottom:8px;color:#b8ab9a;background:var(--cream2);border-radius:10px;padding:12px 14px">🔒 ${(t('secret_body')||'비밀글이에요')} — <span style="font-size:12.5px">${(t('secret_note')||'작성자만 볼 수 있어요')}</span></p>`}
+      ${p._mine?`<button onclick="addWarm(${p.id})" style="border:1.5px solid #e8dcc8;background:var(--cream);border-radius:16px;padding:5px 14px;font-size:13px;cursor:pointer">${t('warm_btn')||'🧡 따뜻해요'} ${p.warm||0}</button>`:''}
     </div>`).join('') : `<p style="text-align:center;color:#9a8f80;font-size:14px;padding:18px">${t('no_posts')||'아직 첫 마음이 남겨지지 않았어요. 당신의 한마디가 첫 번째가 되어줄래요?'}</p>`;
 }
 function esc(t){ const d=document.createElement('div'); d.textContent=t||''; return d.innerHTML; }
@@ -436,17 +470,25 @@ function addWarm(id){
   localStorage.setItem(key,'1'); p.warm=(p.warm||0)+1; boardSave(d);
   boardRender(document.querySelector('.btab.on')?.dataset.btab);
 }
-document.addEventListener('DOMContentLoaded', ()=>{
+document.addEventListener('DOMContentLoaded', async ()=>{
+  loadBoard().then(()=>boardRender());
   const bw = document.getElementById('board-write');
-  if(bw) bw.onclick = ()=>{
+  if(bw) bw.onclick = async ()=>{
     const text = document.getElementById('board-text').value.trim();
     if(!text){ alert(t('need_text')||'마음을 조금만 적어주세요 🙏'); return; }
     const secret = document.getElementById('board-secret').checked;
     let key = localStorage.getItem('eoullim_mykey');
     if(!key){ key = 'k'+Date.now(); localStorage.setItem('eoullim_mykey', key); }
-    const d = boardData();
-    d.unshift({id:Date.now(), nick:document.getElementById('board-nick').value.trim(), text, secret, key, warm:0, date:new Date().toLocaleDateString('ko-KR')});
-    boardSave(d);
+    // DB 우선 → 폴백 로컬
+    let saved = false;
+    if(DB_ON){
+      saved = await dbInsert({nick:document.getElementById('board-nick').value.trim()||null, text, secret, owner_key:key});
+    }
+    if(!saved){
+      const d = boardData();
+      d.unshift({id:Date.now(), nick:document.getElementById('board-nick').value.trim(), text, secret, key, warm:0, date:new Date().toLocaleDateString('ko-KR')});
+      boardSave(d);
+    } else { await loadBoard(); }
     document.getElementById('board-text').value='';
     document.getElementById('board-secret').checked=false;
     boardRender();
@@ -458,9 +500,16 @@ document.addEventListener('DOMContentLoaded', ()=>{
   boardRender();
 
   /* 신청곡 */
-  const PL = ['위로가 되는 곡 — 재생목록','따뜻한 발라드','잔잔한 피아노','힐링 팝'];
+  // 유튜브 뮤직 재생목록 (08-30 v7 — 실제 감상 가능한 목록)
+  const PL = [
+    {name:'위로가 되는 노래', q:'위로가 되는 노래 플레이리스트', emoji:'🫂'},
+    {name:'따뜻한 발라드', q:'따뜻한 발라드 모음', emoji:'🕯️'},
+    {name:'잔잔한 피아노·클래식', q:'잔잔한 피아노 음악', emoji:'🎹'},
+    {name:'힐링 팝', q:'힐링 팝송 플레이리스트', emoji:'☀️'},
+    {name:'마음이 편안해지는 명상음악', q:'명상 음악 마음챙김', emoji:'🌿'},
+  ];
   const plEl = document.getElementById('pl-list');
-  if(plEl) plEl.innerHTML = PL.map(x=>`<div style="padding:8px 12px;background:var(--cream2);border-radius:10px;margin:5px 0;font-size:13.5px">🎧 ${x}</div>`).join('');
+  if(plEl) plEl.innerHTML = PL.map(x=>`<a href="https://music.youtube.com/search?q=${encodeURIComponent(x.q)}" target="_blank" rel="noopener" style="display:block;padding:9px 12px;background:var(--cream2);border-radius:10px;margin:5px 0;font-size:13.5px;color:var(--ink);text-decoration:none">${x.emoji} ${x.name} <span style="color:var(--sage-dark);font-size:11.5px">▶ 유튜브뮤직</span></a>`).join('');
   function songs(){ return JSON.parse(localStorage.getItem('eoullim_songs')||'[]'); }
   function songsRender(){
     const el = document.getElementById('song-list'); if(!el) return;
@@ -484,9 +533,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
 /* ── 동적 텍스트 번역 (v4) — alert/모달/검사 UI ── */
 const DYN = {
- en:{need_all:'Please answer all questions 🙏',need_text:'Please write a little 🙏',need_song:'Please enter a song title 🎶',song_ok:'Song request received 🎶 We will add it to the playlist!',board_ok:'Your heart has been shared 🧡',secret_ok:'Saved as a secret note 🔒 Only visible in this browser',apply_ok:'Request received 🌿 We will contact you within 1-2 days. (Demo — actual: 010-8889-4763)',see_video:'🎬 Watch related video',ask_prog:'Ask about this program',ph_nick:'Nickname (optional)',ph_heart:'Write your heart. Anything is fine.',ph_song_t:'Song title',ph_song_w:'Why this song (optional)',no_posts:'No hearts shared yet. Could yours be the first?',wait_songs:'Waiting for the first song request',no_ans:'Unanswered',q0:'Not at all',q1:'Several days',q2:'More than a week',q3:'Nearly every day',w0:'Not at all',w1:'A little',w2:'Moderately',w3:'Quite',w4:'Very',res_of:'result',crisis_t:'💔 Are you having thoughts of hurting yourself?',crisis_d:'You can reach out right now — Suicide Prevention 1393 (24h) / Youth Line 1388. You are not alone.',score_of:'of',anon:'Anonymous heart',secret_tag:'· 🔒Secret',warm_btn:'🧡 Warm',all:'All',warm_tab:'Most warmed'},
- zh:{need_all:'请回答所有问题 🙏',need_text:'请写下一点心情 🙏',need_song:'请输入歌曲名 🎶',song_ok:'已收到点歌 🎶 会加入播放列表！',board_ok:'心情已留下 🧡',secret_ok:'已保存为秘密留言 🔒 仅在此浏览器可见',apply_ok:'申请已接收 🌿 1-2天内联系您。（演示 — 实际: 010-8889-4763）',see_video:'🎬 观看相关视频',ask_prog:'咨询此活动',ph_nick:'昵称（可不填）',ph_heart:'写下你的心情。什么都可以。',ph_song_t:'歌曲名',ph_song_w:'点这首歌的理由（选填）',no_posts:'还没有留下心情。你的会是第一条吗？',wait_songs:'等待第一首点歌',no_ans:'未回答',q0:'完全没有',q1:'几天',q2:'一周以上',q3:'几乎每天',w0:'完全没有',w1:'一点',w2:'一般',w3:'相当',w4:'非常',res_of:'结果',crisis_t:'💔 你有伤害自己的想法吗？',crisis_d:'现在就可以联系 — 自杀预防 1393（24小时）/ 青少年热线 1388。你不是一个人。',score_of:'/',anon:'匿名心情',secret_tag:'· 🔒秘密',warm_btn:'🧡 温暖',all:'全部',warm_tab:'最多温暖'},
- vi:{need_all:'Vui lòng trả lời tất cả câu hỏi 🙏',need_text:'Xin viết ra một chút 🙏',need_song:'Vui lòng nhập tên bài hát 🎶',song_ok:'Đã nhận yêu cầu bài hát 🎶 Sẽ thêm vào playlist!',board_ok:'Tâm tình đã được chia sẻ 🧡',secret_ok:'Đã lưu như lời nhắn kín 🔒 Chỉ thấy trên trình duyệt này',apply_ok:'Đã nhận đăng ký 🌿 Sẽ liên hệ trong 1-2 ngày. (Demo — thực tế: 010-8889-4763)',see_video:'🎬 Xem video liên quan',ask_prog:'Hỏi về chương trình này',ph_nick:'Biệt danh (không bắt buộc)',ph_heart:'Viết tâm tình của bạn. Điều gì cũng được.',ph_song_t:'Tên bài hát',ph_song_w:'Vì sao chọn bài này (không bắt buộc)',no_posts:'Chưa có tâm tình nào. Bạn sẽ là người đầu tiên chứ?',wait_songs:'Đang chờ bài hát đầu tiên',no_ans:'Chưa trả lời',q0:'Không hề',q1:'Vài ngày',q2:'Hơn một tuần',q3:'Gần như mỗi ngày',w0:'Không hề',w1:'Một chút',w2:'Trung bình',w3:'Khá',w4:'Rất',res_of:'kết quả',crisis_t:'💔 Bạn đang có ý nghĩ làm tổn thương mình sao?',crisis_d:'Bạn có thể liên hệ ngay — Phòng chống tự tử 1393 (24h) / Đường dây tuổi teen 1388. Bạn không một mình.',score_of:'/',anon:'Tâm tình ẩn danh',secret_tag:'· 🔒Kín',warm_btn:'🧡 Ấm áp',all:'Tất cả',warm_tab:'Nhiều ấm áp nhất'}
+ en:{need_all:'Please answer all questions 🙏',need_text:'Please write a little 🙏',need_song:'Please enter a song title 🎶',song_ok:'Song request received 🎶 We will add it to the playlist!',board_ok:'Your heart has been shared 🧡',secret_ok:'Saved as a secret note 🔒 Only visible in this browser',apply_ok:'Request received 🌿 We will contact you within 1-2 days. (Demo — actual: 010-6410-0146)',see_video:'🎬 Watch related video',ask_prog:'Ask about this program',ph_nick:'Nickname (optional)',ph_heart:'Write your heart. Anything is fine.',ph_song_t:'Song title',ph_song_w:'Why this song (optional)',no_posts:'No hearts shared yet. Could yours be the first?',wait_songs:'Waiting for the first song request',no_ans:'Unanswered',q0:'Not at all',q1:'Several days',q2:'More than a week',q3:'Nearly every day',w0:'Not at all',w1:'A little',w2:'Moderately',w3:'Quite',w4:'Very',res_of:'result',crisis_t:'💔 Are you having thoughts of hurting yourself?',crisis_d:'You can reach out right now — Suicide Prevention 1393 (24h) / Youth Line 1388. You are not alone.',score_of:'of',anon:'Anonymous heart',secret_tag:'· 🔒Secret',warm_btn:'🧡 Warm',all:'All',warm_tab:'Most warmed'},
+ zh:{need_all:'请回答所有问题 🙏',need_text:'请写下一点心情 🙏',need_song:'请输入歌曲名 🎶',song_ok:'已收到点歌 🎶 会加入播放列表！',board_ok:'心情已留下 🧡',secret_ok:'已保存为秘密留言 🔒 仅在此浏览器可见',apply_ok:'申请已接收 🌿 1-2天内联系您。（演示 — 实际: 010-6410-0146）',see_video:'🎬 观看相关视频',ask_prog:'咨询此活动',ph_nick:'昵称（可不填）',ph_heart:'写下你的心情。什么都可以。',ph_song_t:'歌曲名',ph_song_w:'点这首歌的理由（选填）',no_posts:'还没有留下心情。你的会是第一条吗？',wait_songs:'等待第一首点歌',no_ans:'未回答',q0:'完全没有',q1:'几天',q2:'一周以上',q3:'几乎每天',w0:'完全没有',w1:'一点',w2:'一般',w3:'相当',w4:'非常',res_of:'结果',crisis_t:'💔 你有伤害自己的想法吗？',crisis_d:'现在就可以联系 — 自杀预防 1393（24小时）/ 青少年热线 1388。你不是一个人。',score_of:'/',anon:'匿名心情',secret_tag:'· 🔒秘密',warm_btn:'🧡 温暖',all:'全部',warm_tab:'最多温暖'},
+ vi:{need_all:'Vui lòng trả lời tất cả câu hỏi 🙏',need_text:'Xin viết ra một chút 🙏',need_song:'Vui lòng nhập tên bài hát 🎶',song_ok:'Đã nhận yêu cầu bài hát 🎶 Sẽ thêm vào playlist!',board_ok:'Tâm tình đã được chia sẻ 🧡',secret_ok:'Đã lưu như lời nhắn kín 🔒 Chỉ thấy trên trình duyệt này',apply_ok:'Đã nhận đăng ký 🌿 Sẽ liên hệ trong 1-2 ngày. (Demo — thực tế: 010-6410-0146)',see_video:'🎬 Xem video liên quan',ask_prog:'Hỏi về chương trình này',ph_nick:'Biệt danh (không bắt buộc)',ph_heart:'Viết tâm tình của bạn. Điều gì cũng được.',ph_song_t:'Tên bài hát',ph_song_w:'Vì sao chọn bài này (không bắt buộc)',no_posts:'Chưa có tâm tình nào. Bạn sẽ là người đầu tiên chứ?',wait_songs:'Đang chờ bài hát đầu tiên',no_ans:'Chưa trả lời',q0:'Không hề',q1:'Vài ngày',q2:'Hơn một tuần',q3:'Gần như mỗi ngày',w0:'Không hề',w1:'Một chút',w2:'Trung bình',w3:'Khá',w4:'Rất',res_of:'kết quả',crisis_t:'💔 Bạn đang có ý nghĩ làm tổn thương mình sao?',crisis_d:'Bạn có thể liên hệ ngay — Phòng chống tự tử 1393 (24h) / Đường dây tuổi teen 1388. Bạn không một mình.',score_of:'/',anon:'Tâm tình ẩn danh',secret_tag:'· 🔒Kín',warm_btn:'🧡 Ấm áp',all:'Tất cả',warm_tab:'Nhiều ấm áp nhất'}
 };
 let CUR_LANG='ko';
 function t(k){ return (CUR_LANG!=='ko' && DYN[CUR_LANG] && DYN[CUR_LANG][k]) || null; }
