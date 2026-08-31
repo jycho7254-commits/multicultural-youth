@@ -608,7 +608,11 @@ function boardRender(sort){
   if(!list) return;
   let d = boardData();
   if(sort==='warm') d = d.slice().sort((a,b)=>b.warm-a.warm);
-  d.forEach(post=>{ post._mine = !post.secret || (post.key===localStorage.getItem('eoullim_mykey')); });
+  d.forEach(post=>{
+    const myKey = localStorage.getItem('eoullim_mykey');
+    post._mine = !post.secret || (post.key===myKey);
+    post._canSeeReply = !post.reply_secret || (post.key===myKey); // 비밀답변: 글 작성자만
+  });
   list.innerHTML = d.length ? d.map(p=>`
     <div style="padding:14px;border-bottom:1px dashed #e8dcc8">
       <div style="display:flex;justify-content:space-between;font-size:12.5px;color:#9a8f80;margin-bottom:5px">
@@ -617,7 +621,7 @@ function boardRender(sort){
       ${p._mine
         ? `<p style="font-size:14.5px;margin-bottom:8px;white-space:pre-wrap">${esc(p.text)}</p>`
         : `<p style="font-size:14px;margin-bottom:8px;color:#b8ab9a;background:var(--cream2);border-radius:10px;padding:12px 14px">🔒 ${(t('secret_body')||'비밀글이에요')} — <span style="font-size:12.5px">${(t('secret_note')||'작성자만 볼 수 있어요')}</span></p>`}
-      ${p.reply && (!p.reply_secret || p._mine)?`<div style="background:#fdf3e7;border-left:3px solid var(--sage);border-radius:0 10px 10px 0;padding:10px 14px;margin-bottom:8px;font-size:13.5px"><b style="color:var(--sage-dark)">🧡 ${(t('admin_reply_tag')||'어울림에서')}${p.reply_secret?' 🔒':''}</b><br>${esc(p.reply)}</div>`:''}
+      ${p.reply && (!p.reply_secret || p._canSeeReply)?`<div style="background:#fdf3e7;border-left:3px solid var(--sage);border-radius:0 10px 10px 0;padding:10px 14px;margin-bottom:8px;font-size:13.5px"><b style="color:var(--sage-dark)">🧡 ${(t('admin_reply_tag')||'어울림에서')}${p.reply_secret?' 🔒':''}</b><br>${esc(p.reply)}</div>`:''}
       ${p._mine?`<div style="display:flex;gap:8px">
         <button onclick="addReact(${p.id},'warm')" style="border:1.5px solid #e8dcc8;background:var(--cream);border-radius:16px;padding:5px 14px;font-size:13px;cursor:pointer">${t('warm_btn')||'🧡 따뜻해요'} ${p.warm||0}</button>
         <button onclick="addReact(${p.id},'cheer')" style="border:1.5px solid #e8dcc8;background:var(--cream);border-radius:16px;padding:5px 14px;font-size:13px;cursor:pointer">${t('cheer_btn')||'💪 힘내요'} ${p.cheer||0}</button>
@@ -1353,7 +1357,7 @@ function saveCheckRecord(testKey, score, level){
       fetch(BOARD_DB_URL + '/rest/v1/eoullim_checks', {
         method: 'POST',
         headers: {'apikey': BOARD_DB_KEY, 'Authorization': 'Bearer ' + BOARD_DB_KEY, 'Content-Type': 'application/json', 'Prefer': 'return-minimal'},
-        body: JSON.stringify({test:testKey, score:score, level:String(level).slice(0,60), nick:nick||null, age:age||null, contact:contact||null, answers:(typeof answers!=='undefined'? Object.values(T.qs.map((q,i)=>answers[i])) : null)})
+        body: JSON.stringify({test:testKey, score:score, level:String(level).slice(0,60), nick:nick||null, age:age||null, contact:contact||null, answers:(typeof answers!=='undefined' ? Array.from({length:TESTS[testKey].qs.length}, (_,i)=>answers[i]) : null)})
       });
     }
   }catch(e){}
