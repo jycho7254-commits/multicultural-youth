@@ -672,6 +672,30 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     }catch(e){}
   }
   loadSongs();
+  const sb = document.getElementById('song-submit');
+  if(sb) sb.onclick = async ()=>{
+    const title = document.getElementById('song-title').value.trim();
+    if(!title){ alert(t('need_song')||'노래 제목을 적어주세요 🎶'); return; }
+    const w = document.getElementById('song-why').value.trim();
+    let saved = false;
+    try{
+      if(typeof DB_ON !== 'undefined' && DB_ON){
+        const r = await fetch(BOARD_DB_URL + '/rest/v1/eoullim_songs', {
+          method: 'POST',
+          headers: {'apikey': BOARD_DB_KEY, 'Authorization': 'Bearer ' + BOARD_DB_KEY, 'Content-Type': 'application/json', 'Prefer': 'return-minimal'},
+          body: JSON.stringify({title, why: w || null})
+        });
+        saved = r.ok;
+      }
+    }catch(e){}
+    if(!saved){
+      const d = songs(); d.unshift({t: title, w, date:new Date().toLocaleDateString('ko-KR')});
+      localStorage.setItem('eoullim_songs', JSON.stringify(d.slice(0,30)));
+    }
+    document.getElementById('song-title').value=''; document.getElementById('song-why').value='';
+    window.songsRender();
+    alert(t('song_ok')||'신청곡이 접수되었어요 🎶 플레이리스트에 반영할게요!');
+  };
   songsRender();
 });
 
