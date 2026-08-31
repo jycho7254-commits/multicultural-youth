@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>어울림 운영툴</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+:root{--sage:#d98e6b;--sage-dark:#b96f4e;--cream:#fdf8f0;--cream2:#f9efe2;--ink:#43372e;--sub:#7d6f60;--coral:#e07856;--red:#c05a40}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Malgun Gothic',sans-serif;background:var(--cream);color:var(--ink);padding:20px;max-width:1000px;margin:0 auto}
+h1{font-size:22px;color:var(--sage-dark);margin-bottom:6px}
+.sub{font-size:13px;color:var(--sub);margin-bottom:20px}
+.tabs{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap}
+.tabs button{padding:10px 16px;border:1.5px solid #e8dcc8;background:#fff;border-radius:10px;cursor:pointer;font-size:14px}
+.tabs button.on{background:var(--sage);color:#fff;border-color:var(--sage);font-weight:bold}
+.card{background:#fff;border-radius:14px;padding:18px;box-shadow:0 3px 16px rgba(180,120,80,.1);margin-bottom:14px}
+.card .meta{font-size:12.5px;color:#9a8f80;margin-bottom:6px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px}
+.card .body{font-size:14.5px;line-height:1.7;white-space:pre-wrap}
+.btn-del{margin-top:10px;border:1.5px solid #e8b8a8;background:#fdf0ea;color:var(--red);border-radius:9px;padding:7px 16px;font-size:13px;cursor:pointer}
+.btn-del:hover{background:#fae0d5}
+.risk{background:#fae8e4;border:1.5px solid var(--coral)}
+.login{max-width:360px;margin:80px auto;text-align:center}
+.login input{width:100%;padding:13px;border:1.5px solid #e8dcc8;border-radius:10px;font-size:15px;margin:14px 0;text-align:center;background:#fff}
+.login button{width:100%;padding:13px;background:var(--sage);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:bold;cursor:pointer}
+.stat{display:inline-block;background:var(--cream2);border-radius:10px;padding:12px 18px;margin:4px;text-align:center;min-width:110px}
+.stat b{display:block;font-size:24px;color:var(--sage-dark)}
+.stat span{font-size:12px;color:var(--sub)}
+.empty{text-align:center;color:#9a8f80;padding:30px;font-size:14px}
+.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:10px;background:#f9efe2;color:var(--sage-dark);font-weight:bold;margin-left:6px}
+.badge.risk{background:#fae8e4;color:var(--red)}
+</style>
+</head>
+<body>
+
+<div id="login" class="login">
+  <div style="font-size:34px">🧡</div>
+  <h1>어울림 운영툴</h1>
+  <p class="sub">관리자 전용</p>
+  <input id="pw" type="password" placeholder="비밀번호" onkeydown="if(event.key==='Enter')doLogin()">
+  <button onclick="doLogin()">입장</button>
+  <p id="login-err" style="color:var(--red);font-size:13px;margin-top:10px"></p>
+</div>
+
+<div id="app" style="display:none">
+  <h1>🧡 어울림 운영툴</h1>
+  <p class="sub">게시글 · 상담신청 · 마음체크 관리</p>
+  <div class="tabs">
+    <button class="on" data-tab="board" onclick="showTab('board')">📋 게시판</button>
+    <button data-tab="counsel" onclick="showTab('counsel')">📨 상담 신청</button>
+    <button data-tab="checks" onclick="showTab('checks')">📊 마음체크</button>
+  </div>
+
+  <div id="tab-board">
+    <div id="board-stats"></div>
+    <div id="board-list"></div>
+  </div>
+  <div id="tab-counsel" style="display:none">
+    <div id="counsel-stats"></div>
+    <div id="counsel-list"></div>
+  </div>
+  <div id="tab-checks" style="display:none">
+    <div id="checks-stats"></div>
+    <div id="checks-list"></div>
+  </div>
+</div>
+
+<script>
+const DB_URL = 'https://puuiviiiltxagoebruuq.supabase.co';
+const DB_KEY = 'sb_publishable_qsHOcy9rnJxhR1jpcRcVFA_7WNMfzWI';
+const H = {'apikey': DB_KEY, 'Authorization': 'Bearer ' + DB_KEY};
+let ADMIN_PW = '';
+
+function doLogin(){
+  const pw = document.getElementById('pw').value;
+  // 검증: admin_delete RPC에 틀린 pw → false 반환. 테스트 delete(존재안하는 id)로 검증
+  fetch(DB_URL + '/rest/v1/rpc/admin_delete_post', {
+    method: 'POST',
+    headers: {...H, 'Content-Type': 'application/json'},
+    body: JSON.stringify({post_id: -1, pw: pw})
+  }).then(r => r.json()).then(ok => {
+    if(ok === true){
+      ADMIN_PW = pw;
+      sessionStorage.setItem('admin', pw);
+      document.getElementById('login').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      loadAll();
+    } else {
+      document.getElementById('login-err').textContent = '비밀번호가 올바르지 않아요';
+    }
+  });
+}
+if(sessionStorage.getItem('admin')){
+  ADMIN_PW = sessionStorage.getItem('admin');
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  loadAll();
+}
+
+function showTab(t){
+  document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('on'));
+  document.querySelector(`[data-tab="${t}"]`).classList.add('on');
+  ['board','counsel','checks'].forEach(x => document.getElementById('tab-'+x).style.display = x===t?'block':'none');
+}
+
+async function api(path){
+  const r = await fetch(DB_URL + '/rest/v1/' + path, {headers: H});
+  return r.ok ? r.json() : [];
+}
+
+async function loadAll(){ loadBoard(); loadCounsel(); loadChecks(); }
+
+async function loadBoard(){
+  const rows = await api('eoullim_board_public?order=created_at.desc&limit=100');
+  document.getElementById('board-stats').innerHTML =
+    `<span class="stat"><b>${rows.length}</b><span>총 게시글</span></span>
+     <span class="stat"><b>${rows.filter(r=>r.secret).length}</b><span>비밀글</span></span>
+     <span class="stat"><b>${rows.reduce((s,r)=>s+(r.warm||0),0)}</b><span>따뜻해요</span></span>`;
+  document.getElementById('board-list').innerHTML = rows.length ? rows.map(r => `
+    <div class="card">
+      <div class="meta"><span>#${r.id} · ${r.nick || '익명'} ${r.secret ? '· 🔒비밀' : ''}</span><span>${(r.created_at||'').slice(0,16).replace('T',' ')}</span></div>
+      <div class="body">${r.secret ? '<i style="color:#9a8f80">[비밀글 — 내용 운영툴에서도 서버 정책상 미표시]</i>' : esc(r.text)}</div>
+      <div style="font-size:12.5px;color:var(--sub);margin-top:8px">🧡 ${r.warm||0} · 💪 ${r.cheer||0}</div>
+      <button class="btn-del" onclick="delPost(${r.id})">삭제</button>
+    </div>`).join('') : '<div class="empty">게시글이 없어요</div>';
+}
+
+async function loadCounsel(){
+  const rows = await api('eoullim_counsel?order=created_at.desc&limit=100');
+  document.getElementById('counsel-stats').innerHTML =
+    `<span class="stat"><b>${rows.length}</b><span>총 신청</span></span>
+     <span class="stat"><b>${rows.filter(r=>r.status==='new').length}</b><span>미확인</span></span>`;
+  document.getElementById('counsel-list').innerHTML = rows.length ? rows.map(r => `
+    <div class="card ${r.status==='new'?'risk':''}">
+      <div class="meta"><span>#${r.id} · ${r.nick||'익명'} ${r.status==='new'?'<span class="badge risk">NEW</span>':''}</span><span>${(r.created_at||'').slice(0,16).replace('T',' ')}</span></div>
+      <div class="body"><b>${esc(r.contact_method||'')}</b> ${esc(r.contact||'')} · 희망: ${esc(r.pref||'')}
+${r.message ? '\n📝 ' + esc(r.message) : ''}</div>
+      ${r.status==='new'?`<button class="btn-del" style="background:#e8f3e8;color:#5c7f60;border-color:#c8dfc8" onclick="markDone(${r.id})">확인 완료</button>`:''}
+    </div>`).join('') : '<div class="empty">상담 신청이 아직 없어요</div>';
+}
+
+async function loadChecks(){
+  const rows = await api('eoullim_checks?order=created_at.desc&limit=200');
+  const phq = rows.filter(r=>r.test==='phq');
+  const high = rows.filter(r=>r.test==='phq' && r.score>=15);
+  document.getElementById('checks-stats').innerHTML =
+    `<span class="stat"><b>${rows.length}</b><span>총 검사</span></span>
+     <span class="stat"><b>${phq.length}</b><span>PHQ-9</span></span>
+     <span class="stat"><b>${high.length}</b><span>⚠️ 고점수(15+)</span></span>`;
+  document.getElementById('checks-list').innerHTML = rows.length ? rows.map(r => {
+    const isHigh = r.test==='phq' && r.score>=15;
+    return `<div class="card ${isHigh?'risk':''}">
+      <div class="meta"><span>${r.test.toUpperCase()} ${isHigh?'<span class="badge risk">고위험</span>':''}</span><span>${(r.created_at||'').slice(0,16).replace('T',' ')}</span></div>
+      <div class="body"><b style="font-size:18px;color:${isHigh?'var(--red)':'var(--sage-dark)'}">${r.score}점</b> — ${esc(r.level||'')}
+${r.nick ? '👤 ' + esc(r.nick) : ''}${r.age ? ' · ' + esc(r.age) : ''}${r.contact ? '\n📞 ' + esc(r.contact) : ''}</div>
+    </div>`;
+  }).join('') : '<div class="empty">아직 기록이 없어요 (동의한 검사만 저장됩니다)</div>';
+}
+
+async function delPost(id){
+  if(!confirm(`게시글 #${id}를 삭제할까요?`)) return;
+  const r = await fetch(DB_URL + '/rest/v1/rpc/admin_delete_post', {
+    method: 'POST',
+    headers: {...H, 'Content-Type': 'application/json'},
+    body: JSON.stringify({post_id: id, pw: ADMIN_PW})
+  });
+  if(await r.json() === true){ loadBoard(); } else { alert('삭제 실패'); }
+}
+
+async function markDone(id){
+  const r = await fetch(DB_URL + '/rest/v1/eoullim_counsel?id=eq.' + id, {
+    method: 'PATCH',
+    headers: {...H, 'Content-Type': 'application/json'},
+    body: JSON.stringify({status: 'done'})
+  });
+  if(r.ok){ loadCounsel(); }
+}
+
+function esc(t){ const d = document.createElement('div'); d.textContent = t||''; return d.innerHTML; }
+</script>
+</body>
+</html>
