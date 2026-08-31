@@ -1233,6 +1233,7 @@ document.getElementById('counsel-form').addEventListener('submit', async e=>{
     message: f.querySelector('textarea').value.trim() || null
   };
   try{
+    console.log('COUNSEL_DBG', DB_ON, JSON.stringify(payload));
     if(DB_ON) await fetch(BOARD_DB_URL + '/rest/v1/eoullim_counsel', {
       method: 'POST',
       headers: {'apikey': BOARD_DB_KEY, 'Authorization': 'Bearer ' + BOARD_DB_KEY, 'Content-Type': 'application/json', 'Prefer': 'return-minimal'},
