@@ -459,7 +459,10 @@ async function loadPlaylistDB(){
     });
     if(r.ok){
       const rows = await r.json();
-      if(rows.length) window.PLAYLIST_DB = rows.map(x=>({name: x.title, q: x.search_q || x.title}));
+      if(rows.length){
+        window.PLAYLIST_DB = rows.map(x=>({name: x.title, q: x.search_q || x.title}));
+        renderPlaylists();
+      }
     }
   }catch(e){}
 }
