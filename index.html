@@ -626,7 +626,7 @@ async function loadBoard(){
   const rows = await dbSelect();
   if(rows) BOARD_REMOTE = rows.map(r=>({
     id:r.id, nick:r.nick, text:r.text===null?'':(r.text||''), secret:r.secret, key:r.owner_key,
-    warm:r.warm||0, cheer:r.cheer||0, reply:r.admin_reply||null, reply_secret:!!r.admin_reply_secret, has_pw:!!r.pw_hash, date:(r.created_at||'').slice(0,10)
+    warm:r.warm||0, cheer:r.cheer||0, reply:r.admin_reply||null, reply_secret:!!r.admin_reply_secret, has_pw:!!r.has_pw, date:(r.created_at||'').slice(0,10)
   }));
 }
 function boardData(){
