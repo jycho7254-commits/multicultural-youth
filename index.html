@@ -407,8 +407,8 @@ footer a:hover{color:#fff}
 
 /* ── 게시판 백엔드 (v7) — Supabase 연동, 미설정 시 localStorage 폴백 ──
    활성화: 아래 두 줄에 형의 Supabase URL/anon키 입력 + supabase_setup.sql 실행 */
-const BOARD_DB_URL = '';  // 예: https://csenbounuattwcivyuho.supabase.co
-const BOARD_DB_KEY = '';  // 예: sb_publishable_xxx 또는 anon key
+const BOARD_DB_URL = 'https://puuiviiiltxagoebruuq.supabase.co';
+const BOARD_DB_KEY = 'sb_publishable_qsHOcy9rnJxhR1jpcRcVFA_7WNMfzWI';
 const DB_ON = BOARD_DB_URL && BOARD_DB_KEY;
 async function dbSelect(){
   if(!DB_ON) return null;
@@ -416,6 +416,23 @@ async function dbSelect(){
     headers: {'apikey': BOARD_DB_KEY, 'Authorization': 'Bearer ' + BOARD_DB_KEY}
   });
   return r.ok ? r.json() : null;
+}
+async function dbUpdateReact(id, kind){
+  if(!DB_ON) return false;
+  // 현재值 read → +1 → update (간단 안전 방식)
+  try{
+    const r0 = await fetch(BOARD_DB_URL + '/rest/v1/eoullim_board?id=eq.' + id + '&select=' + kind, {
+      headers: {'apikey': BOARD_DB_KEY, 'Authorization': 'Bearer ' + BOARD_DB_KEY}
+    });
+    if(!r0.ok) return false;
+    const cur = (await r0.json())[0][kind] || 0;
+    const r = await fetch(BOARD_DB_URL + '/rest/v1/eoullim_board?id=eq.' + id, {
+      method: 'PATCH',
+      headers: {'apikey': BOARD_DB_KEY, 'Authorization': 'Bearer ' + BOARD_DB_KEY, 'Content-Type': 'application/json'},
+      body: JSON.stringify({[kind]: cur + 1})
+    });
+    return r.ok;
+  }catch(e){ return false; }
 }
 async function dbInsert(payload){
   if(!DB_ON) return false;
@@ -572,10 +589,15 @@ function boardRender(sort){
     </div>`).join('') : `<p style="text-align:center;color:#9a8f80;font-size:14px;padding:18px">${t('no_posts')||'아직 첫 마음이 남겨지지 않았어요. 당신의 한마디가 첫 번째가 되어줄래요?'}</p>`;
 }
 function esc(t){ const d=document.createElement('div'); d.textContent=t||''; return d.innerHTML; }
-function addReact(id, kind){ // kind: 'warm' | 'cheer' (v11)
-  const d = boardData(); const p = d.find(x=>x.id===id); if(!p) return;
+async function addReact(id, kind){ // kind: 'warm' | 'cheer' (v11)
   const key='react_'+id+'_'+kind; if(localStorage.getItem(key)) return;
   localStorage.setItem(key,'1');
+  if(DB_ON && BOARD_REMOTE){
+    await dbUpdateReact(id, kind);
+    await loadBoard(); boardRender(document.querySelector('.btab.on')?.dataset.btab);
+    return;
+  }
+  const d = boardData(); const p = d.find(x=>x.id===id); if(!p) return;
   if(kind==='cheer'){ p.cheer=(p.cheer||0)+1; } else { p.warm=(p.warm||0)+1; }
   boardSave(d);
   boardRender(document.querySelector('.btab.on')?.dataset.btab);
