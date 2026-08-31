@@ -171,13 +171,36 @@ async function loadMusic(){
   pl.forEach(x => { (groups[x.category || '기타'] = groups[x.category || '기타'] || []).push(x); });
   const catOrder = ['위로가 되는 노래','따뜻한 발라드','잔잔한 피아노','힐링 팝','명상 음악','기타'];
   document.getElementById('pl-list').innerHTML = pl.length ? catOrder.filter(c=>groups[c]).map(cat =>
-    `<div style="margin-bottom:16px"><b style="font-size:14.5px;color:var(--sage-dark)">📁 ${cat} (${groups[cat].length})</b>` +
+    `<div style="margin-bottom:18px;border:1.5px solid #eee2d0;border-radius:14px;padding:14px;background:#fffdfa">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <b style="font-size:14.5px;color:var(--sage-dark)">📁 ${cat} (${groups[cat].length}곡)</b>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <input id="quick-${encodeURIComponent(cat)}" placeholder="이 장르에 곡 추가" style="padding:8px 12px;border:1.5px solid #e8dcc8;border-radius:8px;font-size:13px;min-width:160px">
+          <button onclick="quickAdd('${cat}')" style="padding:8px 14px;background:var(--sage);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:bold">＋ 추가</button>
+        </div>
+      </div>
+      <div style="margin-top:8px">` +
     groups[cat].map(x => `
-      <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;margin-top:8px">
+      <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;margin-top:8px;background:#fff">
         <a href="https://music.youtube.com/search?q=${encodeURIComponent(x.search_q || x.title)}" target="_blank" rel="noopener" style="color:var(--ink);text-decoration:none;font-weight:bold;font-size:14px">🎧 ${esc(x.title)} <span style="font-size:11px;color:var(--sage-dark)">▶ 미리듣기</span></a>
         <button class="btn-del" onclick="delPlaylist(${x.id})">삭제</button>
-      </div>`).join('') + '</div>'
-  ).join('') : '<div class="empty" style="padding:16px">편성된 곡이 없어요 — 위에서 추가해보세요</div>';
+      </div>`).join('') + '</div></div>'
+  ).join('') + `
+  <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+    <b style="font-size:13px;color:var(--sub)">새 장르 섹션:</b>
+    <select id="new-cat-sel" style="padding:8px;border:1.5px solid #e8dcc8;border-radius:8px;font-size:13px">
+      ${catOrder.filter(c=>!groups[c] && c!=='기타').map(c=>`<option>${c}</option>`).join('')}
+    </select>
+    <input id="new-cat-song" placeholder="곡 제목" style="padding:8px 12px;border:1.5px solid #e8dcc8;border-radius:8px;font-size:13px">
+    <button onclick="quickAdd(document.getElementById('new-cat-sel').value)" style="padding:8px 14px;background:var(--sage);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:bold">＋ 추가</button>
+  </div>` : `<div class="empty" style="padding:16px">아직 편성이 없어요 — 아래에서 장르별로 곡을 추가해보세요</div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:10px">
+    <select id="new-cat-sel" style="padding:8px;border:1.5px solid #e8dcc8;border-radius:8px;font-size:13px">
+      ${catOrder.filter(c=>c!=='기타').map(c=>`<option>${c}</option>`).join('')}
+    </select>
+    <input id="new-cat-song" placeholder="곡 제목" style="padding:8px 12px;border:1.5px solid #e8dcc8;border-radius:8px;font-size:13px">
+    <button onclick="quickAdd(document.getElementById('new-cat-sel').value)" style="padding:8px 14px;background:var(--sage);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:bold">＋ 추가</button>
+  </div>`;
   // 신청곡 — YT검색 링크 포함
   const songs = await api('eoullim_songs?order=created_at.desc&limit=50');
   document.getElementById('song-list').innerHTML = songs.length ? songs.map(x => `
@@ -197,6 +220,17 @@ async function loadMusic(){
     </div>`).join('') : '<div class="empty" style="padding:16px">신청곡이 아직 없어요</div>';
 }
 
+async function quickAdd(cat){
+  const inp = document.getElementById('quick-' + encodeURIComponent(cat)) || document.getElementById('new-cat-song');
+  const title = inp ? inp.value.trim() : '';
+  if(!title){ alert('곡 제목을 입력해주세요'); return; }
+  const r = await fetch(DB_URL + '/rest/v1/eoullim_playlist', {
+    method: 'POST',
+    headers: {...H, 'Content-Type': 'application/json'},
+    body: JSON.stringify({title, search_q: title, category: cat})
+  });
+  if(r.ok){ loadMusic(); }
+}
 async function addPlaylist(){
   const title = document.getElementById('pl-title').value.trim();
   const search = document.getElementById('pl-search').value.trim() || title;
@@ -240,7 +274,10 @@ async function loadCounsel(){
       <div class="meta"><span>#${r.id} · ${r.nick||'익명'} ${r.status==='new'?'<span class="badge risk">NEW</span>':''}</span><span>${(r.created_at||'').slice(0,16).replace('T',' ')}</span></div>
       <div class="body"><b>${esc(r.contact_method||'')}</b> ${esc(r.contact||'')} · 희망: ${esc(r.pref||'')}
 ${r.message ? '\n📝 ' + esc(r.message) : ''}</div>
-      ${r.status==='new'?`<button class="btn-del" style="background:#e8f3e8;color:#5c7f60;border-color:#c8dfc8" onclick="markDone(${r.id})">확인 완료</button>`:''}
+      <div style="display:flex;gap:8px">
+        ${r.status==='new'?`<button class="btn-del" style="background:#e8f3e8;color:#5c7f60;border-color:#c8dfc8" onclick="markDone(${r.id})">확인 완료</button>`:''}
+        <button class="btn-del" onclick="delCounsel(${r.id})">삭제</button>
+      </div>
     </div>`).join('') : '<div class="empty">상담 신청이 아직 없어요</div>';
 }
 
@@ -297,6 +334,7 @@ async function loadChecks(){
       <div class="body"><b style="font-size:18px;color:${isHigh?'var(--red)':'var(--sage-dark)'}">${r.score}점</b> — ${esc(r.level||'')}
 ${r.nick ? '👤 ' + esc(r.nick) : ''}${r.age ? ' · ' + esc(r.age) : ''}${r.contact ? '📞 ' + esc(r.contact) : ''}</div>
       ${ansDetail}
+      <button class="btn-del" onclick="delCheck(${r.id})">삭제</button>
     </div>`;
   }).join('') : '<div class="empty">아직 기록이 없어요</div>');
 }
@@ -311,6 +349,16 @@ async function delPost(id){
   if(await r.json() === true){ loadBoard(); } else { alert('삭제 실패'); }
 }
 
+async function delCounsel(id){
+  if(!confirm(`상담 신청 #${id}를 삭제할까요?`)) return;
+  await fetch(DB_URL + '/rest/v1/eoullim_counsel?id=eq.' + id, {method: 'DELETE', headers: H});
+  loadCounsel();
+}
+async function delCheck(id){
+  if(!confirm(`검사 기록 #${id}를 삭제할까요?`)) return;
+  await fetch(DB_URL + '/rest/v1/eoullim_checks?id=eq.' + id, {method: 'DELETE', headers: H});
+  loadChecks();
+}
 async function markDone(id){
   const r = await fetch(DB_URL + '/rest/v1/eoullim_counsel?id=eq.' + id, {
     method: 'PATCH',

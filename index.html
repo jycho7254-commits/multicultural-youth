@@ -226,6 +226,7 @@ footer a:hover{color:#fff}
         <input id="board-nick" placeholder="닉네임 (안 적어도 OK)" ph-key="ph_nick" style="flex:1;padding:11px 14px;border:1.5px solid #e8dcc8;border-radius:10px;font-size:14px;background:var(--cream)">
         <label style="display:flex;align-items:center;gap:5px;font-size:13px;color:var(--sub);cursor:pointer;white-space:nowrap"><input type="checkbox" id="board-secret"> <span data-i18n="bSecret">비밀글</span></label>
       </div>
+      <input id="board-pw" type="password" placeholder="비밀글 비밀번호 (다른 기기에서 열람할 때 필요)" ph-key="ph_bpw" style="display:none;width:100%;margin-bottom:16px;padding:11px 14px;border:1.5px solid #e8dcc8;border-radius:10px;font-size:14px;background:var(--cream)">
       <textarea id="board-text" placeholder="마음을 적어보세요. 아무 말이라도 괜찮아요." ph-key="ph_heart" style="width:100%;min-height:80px;padding:12px 14px;border:1.5px solid #e8dcc8;border-radius:10px;font-size:14.5px;font-family:inherit;background:var(--cream);resize:vertical"></textarea>
       <button id="board-write" style="margin-top:12px;width:100%;padding:12px;background:var(--sage);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:bold;cursor:pointer"><span data-i18n="bWrite">글 남기기</span> 🧡</button>
       <div id="board-list" style="margin-top:22px"></div>
@@ -405,6 +406,10 @@ footer a:hover{color:#fff}
 
 <script>
 
+async function sha256(str){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
 /* ── 게시판 백엔드 (v7) — Supabase 연동, 미설정 시 localStorage 폴백 ──
    활성화: 아래 두 줄에 형의 Supabase URL/anon키 입력 + supabase_setup.sql 실행 */
 const BOARD_DB_URL = 'https://puuiviiiltxagoebruuq.supabase.co';
@@ -486,8 +491,15 @@ function renderPlaylists(){
     window.PLAYLIST_GROUPS = groups;
     return;
   }
+  // 폴백: 기본 5종도 버튼+팝업 (v16)
   const list = PL_I18N[CUR_LANG] || PL_I18N.ko;
-  plEl.innerHTML = list.map(x=>`<a href="https://music.youtube.com/search?q=${encodeURIComponent(x[1])}" target="_blank" rel="noopener" style="display:block;padding:9px 12px;background:var(--cream2);border-radius:10px;margin:5px 0;font-size:13.5px;color:var(--ink);text-decoration:none">${x[2]} ${x[0]} <span style="color:var(--sage-dark);font-size:11.5px">▶ ${YT}</span></a>`).join('');
+  const defGroups = {};
+  list.forEach(x=>{ const c = PL_I18N.ko.find(k=>k[0]===x[0]) ? PL_I18N.ko.find(k=>k[0]===x[0])[0] : '기타'; (defGroups[c] = defGroups[c] || []).push({name: x[0], q: x[1], cat: c}); });
+  window.PLAYLIST_GROUPS = defGroups;
+  plEl.innerHTML = Object.keys(defGroups).map(cat => {
+    const catName = (CUR_LANG!=='ko' && PL_CAT_I18N[CUR_LANG] && PL_CAT_I18N[CUR_LANG][cat]) || cat;
+    return `<button onclick="openPlaylist('${cat}')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;width:100px;height:100px;background:var(--cream2);border:2px solid #eed9c0;border-radius:16px;cursor:pointer;font-size:13px;color:var(--ink);font-weight:bold;transition:.15s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''"><span style="font-size:30px">${EMO[cat]||'🎵'}</span>${catName}<span style="font-size:11px;color:var(--sage-dark);font-weight:normal">${defGroups[cat].length}곡</span></button>`;
+  }).join('');
 }
 function openPlaylist(cat){
   const groups = window.PLAYLIST_GROUPS || {};
@@ -614,7 +626,7 @@ async function loadBoard(){
   const rows = await dbSelect();
   if(rows) BOARD_REMOTE = rows.map(r=>({
     id:r.id, nick:r.nick, text:r.text===null?'':(r.text||''), secret:r.secret, key:r.owner_key,
-    warm:r.warm||0, cheer:r.cheer||0, reply:r.admin_reply||null, reply_secret:!!r.admin_reply_secret, date:(r.created_at||'').slice(0,10)
+    warm:r.warm||0, cheer:r.cheer||0, reply:r.admin_reply||null, reply_secret:!!r.admin_reply_secret, has_pw:!!r.pw_hash, date:(r.created_at||'').slice(0,10)
   }));
 }
 function boardData(){
@@ -629,7 +641,7 @@ function boardRender(sort){
   if(sort==='warm') d = d.slice().sort((a,b)=>b.warm-a.warm);
   d.forEach(post=>{
     const myKey = localStorage.getItem('eoullim_mykey');
-    post._mine = !post.secret || (post.key===myKey);
+    post._mine = !post.secret || (post.key===myKey) || post._unlocked;
     post._canSeeReply = !post.reply_secret || (post.key===myKey); // 비밀답변: 글 작성자만
   });
   list.innerHTML = d.length ? d.map(p=>`
@@ -639,7 +651,13 @@ function boardRender(sort){
       </div>
       ${p._mine
         ? `<p style="font-size:14.5px;margin-bottom:8px;white-space:pre-wrap">${esc(p.text)}</p>`
-        : `<p style="font-size:14px;margin-bottom:8px;color:#b8ab9a;background:var(--cream2);border-radius:10px;padding:12px 14px">🔒 ${(t('secret_body')||'비밀글이에요')} — <span style="font-size:12.5px">${(t('secret_note')||'작성자만 볼 수 있어요')}</span></p>`}
+        : `<div style="background:var(--cream2);border-radius:10px;padding:12px 14px;margin-bottom:8px">
+             <p style="font-size:14px;color:#b8ab9a">🔒 ${(t('secret_body')||'비밀글이에요')} — <span style="font-size:12.5px">${(t('secret_note')||'작성자만 볼 수 있어요')}</span></p>
+             ${p.has_pw ? `<div style="display:flex;gap:6px;margin-top:8px">
+               <input id="openpw-${p.id}" type="password" placeholder="${(t('ph_openpw')||'비밀번호')}" style="flex:1;padding:8px 12px;border:1.5px solid #e8dcc8;border-radius:8px;font-size:13px;background:#fff">
+               <button onclick="openSecret(${p.id})" style="padding:8px 14px;background:var(--sage);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer">${(t('open_btn')||'열기')}</button>
+             </div>` : ''}
+           </div>`}
       ${p.reply ? (p._canSeeReply
         ? `<div style="background:#fdf3e7;border-left:3px solid var(--sage);border-radius:0 10px 10px 0;padding:10px 14px;margin-bottom:8px;font-size:13.5px"><b style="color:var(--sage-dark)">🧡 ${(t('admin_reply_tag')||'어울림에서')}${p.reply_secret?' 🔒':''}</b><br>${esc(p.reply)}</div>`
         : `<div style="background:#f4ede4;border-left:3px solid #c9b8a5;border-radius:0 10px 10px 0;padding:10px 14px;margin-bottom:8px;font-size:13.5px;color:#9a8f80"><b style="color:#8a7d6d">🧡 ${(t('admin_reply_tag')||'어울림에서')} 🔒</b><br>${(t('secret_reply_body')||'비밀 답변입니다')}</div>`)
@@ -651,6 +669,26 @@ function boardRender(sort){
     </div>`).join('') : `<p style="text-align:center;color:#9a8f80;font-size:14px;padding:18px">${t('no_posts')||'아직 첫 마음이 남겨지지 않았어요. 당신의 한마디가 첫 번째가 되어줄래요?'}</p>`;
 }
 function esc(t){ const d=document.createElement('div'); d.textContent=t||''; return d.innerHTML; }
+async function openSecret(id){
+  const pw = document.getElementById('openpw-' + id).value.trim();
+  if(!pw) return;
+  const h = await sha256(pw + 'eoullim');
+  try{
+    const r = await fetch(BOARD_DB_URL + '/rest/v1/rpc/verify_post_pw', {
+      method: 'POST',
+      headers: {'apikey': BOARD_DB_KEY, 'Authorization': 'Bearer ' + BOARD_DB_KEY, 'Content-Type': 'application/json'},
+      body: JSON.stringify({post_id: id, input_hash: h})
+    });
+    const ok = await r.json();
+    if(ok === true){
+      // 비밀내용 로드 — 로컬 캐시에 key 부여
+      const d = boardData();
+      const post = d.find(x=>x.id===id);
+      if(post){ post._unlocked = true; post.key = 'unlocked_' + id; BOARD_REMOTE = d; boardRender(document.querySelector('.btab.on')?.dataset.btab); return; }
+    }
+    alert(t('pw_wrong')||'비밀번호가 올바르지 않아요');
+  }catch(e){ alert(t('pw_wrong')||'비밀번호가 올바르지 않아요'); }
+}
 async function addReact(id, kind){ // kind: 'warm' | 'cheer' (v11)
   const key='react_'+id+'_'+kind; if(localStorage.getItem(key)) return;
   localStorage.setItem(key,'1');
@@ -666,6 +704,11 @@ async function addReact(id, kind){ // kind: 'warm' | 'cheer' (v11)
 }
 document.addEventListener('DOMContentLoaded', async ()=>{
   loadBoard().then(()=>boardRender());
+  document.getElementById('board-secret').addEventListener('change', function(){
+    const pwEl = document.getElementById('board-pw');
+    pwEl.style.display = this.checked ? 'block' : 'none';
+    if(!this.checked) pwEl.value = '';
+  });
   const bw = document.getElementById('board-write');
   if(bw) bw.onclick = async ()=>{
     const text = document.getElementById('board-text').value.trim();
@@ -675,8 +718,10 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     if(!key){ key = 'k'+Date.now(); localStorage.setItem('eoullim_mykey', key); }
     // DB 우선 → 폴백 로컬
     let saved = false;
+    const pwVal = document.getElementById('board-pw') ? document.getElementById('board-pw').value.trim() : '';
+    const pwHash = pwVal ? await sha256(pwVal + 'eoullim') : null;
     if(DB_ON){
-      saved = await dbInsert({nick:document.getElementById('board-nick').value.trim()||null, text, secret, owner_key:key});
+      saved = await dbInsert({nick:document.getElementById('board-nick').value.trim()||null, text, secret, owner_key:key, pw_hash:pwHash});
     }
     if(!saved){
       const d = boardData();
@@ -745,9 +790,9 @@ document.addEventListener('DOMContentLoaded', async ()=>{
 
 /* ── 동적 텍스트 번역 (v4) — alert/모달/검사 UI ── */
 const DYN = {
- en:{secret_reply_body:'This is a private reply',need_nick:'Please enter a nickname (needed to save your record)',need_age:'Please select your age group',need_consent:'Please agree to the privacy policy',admin_reply_tag:'From Eoullim',cheer_btn:'💪 Cheer',ph_r_nick:'Nickname (optional)',ph_r_contact:'Contact (optional — only if score is high)',riT:'💌 Keep your result for later (optional)',riC:'I agree to the collection and use of personal information (details)',riP:'📋 View full privacy policy',rec_saved:'Record saved',need_all:'Please answer all questions 🙏',need_text:'Please write a little 🙏',need_song:'Please enter a song title 🎶',song_ok:'Song request received 🎶 We will add it to the playlist!',board_ok:'Your heart has been shared 🧡',secret_ok:'Saved as a secret note 🔒 Only visible in this browser',apply_ok:'Request received 🌿 We will contact you within 1-2 days. (Demo — actual: 010-6410-0146)',see_video:'🎬 Watch related video',ask_prog:'Ask about this program',ph_nick:'Nickname (optional)',ph_heart:'Write your heart. Anything is fine.',ph_song_t:'Song title',ph_song_w:'Why this song (optional)',no_posts:'No hearts shared yet. Could yours be the first?',wait_songs:'Waiting for the first song request',no_ans:'Unanswered',q0:'Not at all',q1:'Several days',q2:'More than a week',q3:'Nearly every day',w0:'Not at all',w1:'A little',w2:'Moderately',w3:'Quite',w4:'Very',res_of:'result',crisis_t:'💔 Are you having thoughts of hurting yourself?',crisis_d:'You can reach out right now — Suicide Prevention 1393 (24h) / Youth Line 1388. You are not alone.',score_of:'of',anon:'Anonymous heart',secret_tag:'· 🔒Secret',warm_btn:'🧡 Warm',all:'All',warm_tab:'Most warmed',phq_qs:["Feeling down, depressed, or hopeless", "Little interest or pleasure in doing things", "Sleep problems", "Feeling tired or having no energy", "Poor appetite or overeating", "Feeling bad about yourself", "Trouble concentrating", "Moving/speaking slowly or being restless", "Thoughts that you'd be better off dead"],gad_qs:["Feeling nervous, anxious, or on edge", "Not being able to stop worrying", "Worrying too much", "Trouble relaxing", "Being so restless it's hard to sit still", "Becoming easily annoyed or irritable", "Feeling afraid something awful might happen"],who_qs:["I have felt cheerful and in good spirits", "I have felt calm and relaxed", "I have felt active and vigorous", "I woke up feeling fresh and rested", "My daily life has been filled with things that interest me"]},
- zh:{secret_reply_body:'这是悄悄回复',need_nick:'请输入昵称（保存记录需要）',need_age:'请选择年龄段',need_consent:'请同意隐私政策',admin_reply_tag:'来自和谐',cheer_btn:'💪 加油',ph_r_nick:'昵称（选填）',ph_r_contact:'联系方式（选填 — 仅分数高时联系）',riT:'💌 留下结果，以后再看（选填）',riC:'我同意收集和使用个人信息（详情）',riP:'📋 查看完整隐私政策',rec_saved:'已保存记录',need_all:'请回答所有问题 🙏',need_text:'请写下一点心情 🙏',need_song:'请输入歌曲名 🎶',song_ok:'已收到点歌 🎶 会加入播放列表！',board_ok:'心情已留下 🧡',secret_ok:'已保存为秘密留言 🔒 仅在此浏览器可见',apply_ok:'咨询申请已接收 🌿 1-2天内联系您。',see_video:'🎬 观看相关视频',ask_prog:'咨询此活动',ph_nick:'昵称（可不填）',ph_heart:'写下你的心情。什么都可以。',ph_song_t:'歌曲名',ph_song_w:'点这首歌的理由（选填）',no_posts:'还没有留下心情。你的会是第一条吗？',wait_songs:'等待第一首点歌',no_ans:'未回答',q0:'完全没有',q1:'几天',q2:'一周以上',q3:'几乎每天',w0:'完全没有',w1:'一点',w2:'一般',w3:'相当',w4:'非常',res_of:'结果',crisis_t:'💔 你有伤害自己的想法吗？',crisis_d:'现在就可以联系 — 自杀预防 1393（24小时）/ 青少年热线 1388。你不是一个人。',score_of:'/',anon:'匿名心情',secret_tag:'· 🔒秘密',warm_btn:'🧡 温暖',all:'全部',warm_tab:'最多温暖',phq_qs:["感到情绪低落、沮丧或绝望", "对做事没有兴趣或乐趣", "睡眠问题", "感到疲倦或没有精力", "食欲不振或暴饮暴食", "对自己感觉不好", "难以集中注意力", "动作/说话变慢或烦躁不安", "认为死了会更好的想法"],gad_qs:["感到紧张、焦虑或烦躁", "无法停止担心", "过分担心", "难以放松", "坐立不安", "容易烦躁或易怒", "害怕会发生可怕的事"],who_qs:["我感到愉快且精神好", "我感到平静和放松", "我感到活跃且有活力", "我醒来时感觉清爽", "我的日常生活充满了有趣的事情"]},
- vi:{secret_reply_body:'Đây là câu trả lời riêng tư',need_nick:'Vui lòng nhập biệt danh (để lưu kết quả)',need_age:'Vui lòng chọn độ tuổi',need_consent:'Vui lòng đồng ý chính sách quyền riêng tư',admin_reply_tag:'Từ Eoullim',cheer_btn:'💪 Cố lên',ph_r_nick:'Biệt danh (không bắt buộc)',ph_r_contact:'Liên hệ (không bắt buộc — chỉ khi điểm cao)',riT:'💌 Lưu kết quả để xem lại (không bắt buộc)',riC:'Tôi đồng ý thu thập và sử dụng thông tin cá nhân (chi tiết)',riP:'📋 Xem chính sách quyền riêng tư',rec_saved:'Đã lưu',need_all:'Vui lòng trả lời tất cả câu hỏi 🙏',need_text:'Xin viết ra một chút 🙏',need_song:'Vui lòng nhập tên bài hát 🎶',song_ok:'Đã nhận yêu cầu bài hát 🎶 Sẽ thêm vào playlist!',board_ok:'Tâm tình đã được chia sẻ 🧡',secret_ok:'Đã lưu như lời nhắn kín 🔒 Chỉ thấy trên trình duyệt này',apply_ok:'Đã nhận đăng ký 🌿 Sẽ liên hệ trong 1-2 ngày. (Demo — thực tế: 010-6410-0146)',see_video:'🎬 Xem video liên quan',ask_prog:'Hỏi về chương trình này',ph_nick:'Biệt danh (không bắt buộc)',ph_heart:'Viết tâm tình của bạn. Điều gì cũng được.',ph_song_t:'Tên bài hát',ph_song_w:'Vì sao chọn bài này (không bắt buộc)',no_posts:'Chưa có tâm tình nào. Bạn sẽ là người đầu tiên chứ?',wait_songs:'Đang chờ bài hát đầu tiên',no_ans:'Chưa trả lời',q0:'Không hề',q1:'Vài ngày',q2:'Hơn một tuần',q3:'Gần như mỗi ngày',w0:'Không hề',w1:'Một chút',w2:'Trung bình',w3:'Khá',w4:'Rất',res_of:'kết quả',crisis_t:'💔 Bạn đang có ý nghĩ làm tổn thương mình sao?',crisis_d:'Bạn có thể liên hệ ngay — Phòng chống tự tử 1393 (24h) / Đường dây tuổi teen 1388. Bạn không một mình.',score_of:'/',anon:'Tâm tình ẩn danh',secret_tag:'· 🔒Kín',warm_btn:'🧡 Ấm áp',all:'Tất cả',warm_tab:'Nhiều ấm áp nhất',phq_qs:["Cảm thấy chán nản, trầm cảm hoặc tuyệt vọng", "Mất hứng thú hoặc vui thích", "Vấn đề giấc ngủ", "Cảm thấy mệt mỏi, thiếu năng lượng", "Ăn kém hoặc ăn quá nhiều", "Cảm thấy tệ về bản thân", "Khó tập trung", "Nói/chậm hoặc bồn chồn", "Nghĩ rằng chết đi thì hơn"],gad_qs:["Cảm thấy lo lắng, căng thẳng", "Không thể ngừng lo lắng", "Lo lắng quá mức", "Khó thư giãn", "Bồn chồn khó ngồi yên", "Dễ cáu gắt", "Sợ điều tồi tệ sẽ xảy ra"],who_qs:["Tôi thấy vui vẻ và tinh thần tốt", "Tôi thấy bình tĩnh và thư giãn", "Tôi thấy năng động", "Tôi thức dậy thấy tươi mới", "Cuộc sống hàng ngày đầy điều thú vị"]}
+ en:{ph_bpw:'Password (to open this post from other devices)',ph_openpw:'Password',open_btn:'Open',pw_wrong:'Incorrect password',secret_reply_body:'This is a private reply',need_nick:'Please enter a nickname (needed to save your record)',need_age:'Please select your age group',need_consent:'Please agree to the privacy policy',admin_reply_tag:'From Eoullim',cheer_btn:'💪 Cheer',ph_r_nick:'Nickname (optional)',ph_r_contact:'Contact (optional — only if score is high)',riT:'💌 Keep your result for later (optional)',riC:'I agree to the collection and use of personal information (details)',riP:'📋 View full privacy policy',rec_saved:'Record saved',need_all:'Please answer all questions 🙏',need_text:'Please write a little 🙏',need_song:'Please enter a song title 🎶',song_ok:'Song request received 🎶 We will add it to the playlist!',board_ok:'Your heart has been shared 🧡',secret_ok:'Saved as a secret note 🔒 Only visible in this browser',apply_ok:'Request received 🌿 We will contact you within 1-2 days. (Demo — actual: 010-6410-0146)',see_video:'🎬 Watch related video',ask_prog:'Ask about this program',ph_nick:'Nickname (optional)',ph_heart:'Write your heart. Anything is fine.',ph_song_t:'Song title',ph_song_w:'Why this song (optional)',no_posts:'No hearts shared yet. Could yours be the first?',wait_songs:'Waiting for the first song request',no_ans:'Unanswered',q0:'Not at all',q1:'Several days',q2:'More than a week',q3:'Nearly every day',w0:'Not at all',w1:'A little',w2:'Moderately',w3:'Quite',w4:'Very',res_of:'result',crisis_t:'💔 Are you having thoughts of hurting yourself?',crisis_d:'You can reach out right now — Suicide Prevention 1393 (24h) / Youth Line 1388. You are not alone.',score_of:'of',anon:'Anonymous heart',secret_tag:'· 🔒Secret',warm_btn:'🧡 Warm',all:'All',warm_tab:'Most warmed',phq_qs:["Feeling down, depressed, or hopeless", "Little interest or pleasure in doing things", "Sleep problems", "Feeling tired or having no energy", "Poor appetite or overeating", "Feeling bad about yourself", "Trouble concentrating", "Moving/speaking slowly or being restless", "Thoughts that you'd be better off dead"],gad_qs:["Feeling nervous, anxious, or on edge", "Not being able to stop worrying", "Worrying too much", "Trouble relaxing", "Being so restless it's hard to sit still", "Becoming easily annoyed or irritable", "Feeling afraid something awful might happen"],who_qs:["I have felt cheerful and in good spirits", "I have felt calm and relaxed", "I have felt active and vigorous", "I woke up feeling fresh and rested", "My daily life has been filled with things that interest me"]},
+ zh:{ph_bpw:'密码（在其他设备打开时需要）',ph_openpw:'密码',open_btn:'打开',pw_wrong:'密码不正确',secret_reply_body:'这是悄悄回复',need_nick:'请输入昵称（保存记录需要）',need_age:'请选择年龄段',need_consent:'请同意隐私政策',admin_reply_tag:'来自和谐',cheer_btn:'💪 加油',ph_r_nick:'昵称（选填）',ph_r_contact:'联系方式（选填 — 仅分数高时联系）',riT:'💌 留下结果，以后再看（选填）',riC:'我同意收集和使用个人信息（详情）',riP:'📋 查看完整隐私政策',rec_saved:'已保存记录',need_all:'请回答所有问题 🙏',need_text:'请写下一点心情 🙏',need_song:'请输入歌曲名 🎶',song_ok:'已收到点歌 🎶 会加入播放列表！',board_ok:'心情已留下 🧡',secret_ok:'已保存为秘密留言 🔒 仅在此浏览器可见',apply_ok:'咨询申请已接收 🌿 1-2天内联系您。',see_video:'🎬 观看相关视频',ask_prog:'咨询此活动',ph_nick:'昵称（可不填）',ph_heart:'写下你的心情。什么都可以。',ph_song_t:'歌曲名',ph_song_w:'点这首歌的理由（选填）',no_posts:'还没有留下心情。你的会是第一条吗？',wait_songs:'等待第一首点歌',no_ans:'未回答',q0:'完全没有',q1:'几天',q2:'一周以上',q3:'几乎每天',w0:'完全没有',w1:'一点',w2:'一般',w3:'相当',w4:'非常',res_of:'结果',crisis_t:'💔 你有伤害自己的想法吗？',crisis_d:'现在就可以联系 — 自杀预防 1393（24小时）/ 青少年热线 1388。你不是一个人。',score_of:'/',anon:'匿名心情',secret_tag:'· 🔒秘密',warm_btn:'🧡 温暖',all:'全部',warm_tab:'最多温暖',phq_qs:["感到情绪低落、沮丧或绝望", "对做事没有兴趣或乐趣", "睡眠问题", "感到疲倦或没有精力", "食欲不振或暴饮暴食", "对自己感觉不好", "难以集中注意力", "动作/说话变慢或烦躁不安", "认为死了会更好的想法"],gad_qs:["感到紧张、焦虑或烦躁", "无法停止担心", "过分担心", "难以放松", "坐立不安", "容易烦躁或易怒", "害怕会发生可怕的事"],who_qs:["我感到愉快且精神好", "我感到平静和放松", "我感到活跃且有活力", "我醒来时感觉清爽", "我的日常生活充满了有趣的事情"]},
+ vi:{ph_bpw:'Mật khẩu (để mở từ thiết bị khác)',ph_openpw:'Mật khẩu',open_btn:'Mở',pw_wrong:'Mật khẩu không đúng',secret_reply_body:'Đây là câu trả lời riêng tư',need_nick:'Vui lòng nhập biệt danh (để lưu kết quả)',need_age:'Vui lòng chọn độ tuổi',need_consent:'Vui lòng đồng ý chính sách quyền riêng tư',admin_reply_tag:'Từ Eoullim',cheer_btn:'💪 Cố lên',ph_r_nick:'Biệt danh (không bắt buộc)',ph_r_contact:'Liên hệ (không bắt buộc — chỉ khi điểm cao)',riT:'💌 Lưu kết quả để xem lại (không bắt buộc)',riC:'Tôi đồng ý thu thập và sử dụng thông tin cá nhân (chi tiết)',riP:'📋 Xem chính sách quyền riêng tư',rec_saved:'Đã lưu',need_all:'Vui lòng trả lời tất cả câu hỏi 🙏',need_text:'Xin viết ra một chút 🙏',need_song:'Vui lòng nhập tên bài hát 🎶',song_ok:'Đã nhận yêu cầu bài hát 🎶 Sẽ thêm vào playlist!',board_ok:'Tâm tình đã được chia sẻ 🧡',secret_ok:'Đã lưu như lời nhắn kín 🔒 Chỉ thấy trên trình duyệt này',apply_ok:'Đã nhận đăng ký 🌿 Sẽ liên hệ trong 1-2 ngày. (Demo — thực tế: 010-6410-0146)',see_video:'🎬 Xem video liên quan',ask_prog:'Hỏi về chương trình này',ph_nick:'Biệt danh (không bắt buộc)',ph_heart:'Viết tâm tình của bạn. Điều gì cũng được.',ph_song_t:'Tên bài hát',ph_song_w:'Vì sao chọn bài này (không bắt buộc)',no_posts:'Chưa có tâm tình nào. Bạn sẽ là người đầu tiên chứ?',wait_songs:'Đang chờ bài hát đầu tiên',no_ans:'Chưa trả lời',q0:'Không hề',q1:'Vài ngày',q2:'Hơn một tuần',q3:'Gần như mỗi ngày',w0:'Không hề',w1:'Một chút',w2:'Trung bình',w3:'Khá',w4:'Rất',res_of:'kết quả',crisis_t:'💔 Bạn đang có ý nghĩ làm tổn thương mình sao?',crisis_d:'Bạn có thể liên hệ ngay — Phòng chống tự tử 1393 (24h) / Đường dây tuổi teen 1388. Bạn không một mình.',score_of:'/',anon:'Tâm tình ẩn danh',secret_tag:'· 🔒Kín',warm_btn:'🧡 Ấm áp',all:'Tất cả',warm_tab:'Nhiều ấm áp nhất',phq_qs:["Cảm thấy chán nản, trầm cảm hoặc tuyệt vọng", "Mất hứng thú hoặc vui thích", "Vấn đề giấc ngủ", "Cảm thấy mệt mỏi, thiếu năng lượng", "Ăn kém hoặc ăn quá nhiều", "Cảm thấy tệ về bản thân", "Khó tập trung", "Nói/chậm hoặc bồn chồn", "Nghĩ rằng chết đi thì hơn"],gad_qs:["Cảm thấy lo lắng, căng thẳng", "Không thể ngừng lo lắng", "Lo lắng quá mức", "Khó thư giãn", "Bồn chồn khó ngồi yên", "Dễ cáu gắt", "Sợ điều tồi tệ sẽ xảy ra"],who_qs:["Tôi thấy vui vẻ và tinh thần tốt", "Tôi thấy bình tĩnh và thư giãn", "Tôi thấy năng động", "Tôi thức dậy thấy tươi mới", "Cuộc sống hàng ngày đầy điều thú vị"]}
 };
 let CUR_LANG='ko';
 function t(k){ return (CUR_LANG!=='ko' && DYN[CUR_LANG] && DYN[CUR_LANG][k]) || null; }
