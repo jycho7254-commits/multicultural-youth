@@ -680,11 +680,11 @@ async function openSecret(id){
       body: JSON.stringify({post_id: id, input_hash: h})
     });
     const ok = await r.json();
-    if(ok === true){
-      // 비밀내용 로드 — 로컬 캐시에 key 부여
+    if(typeof ok === 'string' && ok.length > 0){
+      // RPC가 원문 반환 — 로컬 캐시에 주입 후 렌더
       const d = boardData();
       const post = d.find(x=>x.id===id);
-      if(post){ post._unlocked = true; post.key = 'unlocked_' + id; BOARD_REMOTE = d; boardRender(document.querySelector('.btab.on')?.dataset.btab); return; }
+      if(post){ post._unlocked = true; post.text = ok; post.key = 'unlocked_' + id; BOARD_REMOTE = d; boardRender(document.querySelector('.btab.on')?.dataset.btab); return; }
     }
     alert(t('pw_wrong')||'비밀번호가 올바르지 않아요');
   }catch(e){ alert(t('pw_wrong')||'비밀번호가 올바르지 않아요'); }
