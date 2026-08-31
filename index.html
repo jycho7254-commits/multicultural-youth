@@ -187,8 +187,8 @@ footer a:hover{color:#fff}
 
 <div class="wrap" id="cards-sec">
   <div class="cards">
-    <div class="card"><div class="ico">🏠</div><h3 data-i18n="card1t">쉼 (Online)</h3><p data-i18n="card1d">24시간 열린 온라인 쉼터. 로그인 없이, 내 방에서 그대로. 조용히 있어도 되고 함께해도 됩니다.</p></div>
-    <div class="card"><div class="ico">🎵</div><h3 data-i18n="card2t">표현 (Art)</h3><p data-i18n="card2d">합창, 음악, 미술로 마음을 표현하는 아트 프로그램. 잘하지 않아도 괜찮아요.</p></div>
+    <div class="card"><div class="ico">🏠</div><h3 data-i18n="card1t">쉼 (Relax)</h3><p data-i18n="card1d">24시간 열린 온라인 쉼터. 로그인 없이,<br>내 방에서 그대로. 조용히 있어도 되고 함께<br>해도 됩니다.</p></div>
+    <div class="card"><div class="ico">🎵</div><h3 data-i18n="card2t">표현 (Art)</h3><p data-i18n="card2d">합창, 음악, 미술로 마음을 표현하는 아트<br>프로그램. 잘하지 않아도 괜찮아요.</p></div>
     <div class="card"><div class="ico">💛</div><h3 data-i18n="card3t">나눔 (Care)</h3><p data-i18n="card3d">마음이 무거울 때, 혼자 갖지 말고 나눠요. 부담 없는 1회 상담부터 시작합니다.</p></div>
   </div>
 </div>
@@ -543,7 +543,7 @@ async function loadBoard(){
   const rows = await dbSelect();
   if(rows) BOARD_REMOTE = rows.map(r=>({
     id:r.id, nick:r.nick, text:r.text===null?'':(r.text||''), secret:r.secret, key:r.owner_key,
-    warm:r.warm||0, date:(r.created_at||'').slice(0,10)
+    warm:r.warm||0, cheer:r.cheer||0, date:(r.created_at||'').slice(0,10)
   }));
 }
 function boardData(){
@@ -565,14 +565,19 @@ function boardRender(sort){
       ${p._mine
         ? `<p style="font-size:14.5px;margin-bottom:8px;white-space:pre-wrap">${esc(p.text)}</p>`
         : `<p style="font-size:14px;margin-bottom:8px;color:#b8ab9a;background:var(--cream2);border-radius:10px;padding:12px 14px">🔒 ${(t('secret_body')||'비밀글이에요')} — <span style="font-size:12.5px">${(t('secret_note')||'작성자만 볼 수 있어요')}</span></p>`}
-      ${p._mine?`<button onclick="addWarm(${p.id})" style="border:1.5px solid #e8dcc8;background:var(--cream);border-radius:16px;padding:5px 14px;font-size:13px;cursor:pointer">${t('warm_btn')||'🧡 따뜻해요'} ${p.warm||0}</button>`:''}
+      ${p._mine?`<div style="display:flex;gap:8px">
+        <button onclick="addReact(${p.id},'warm')" style="border:1.5px solid #e8dcc8;background:var(--cream);border-radius:16px;padding:5px 14px;font-size:13px;cursor:pointer">${t('warm_btn')||'🧡 따뜻해요'} ${p.warm||0}</button>
+        <button onclick="addReact(${p.id},'cheer')" style="border:1.5px solid #e8dcc8;background:var(--cream);border-radius:16px;padding:5px 14px;font-size:13px;cursor:pointer">${t('cheer_btn')||'💪 힘내요'} ${p.cheer||0}</button>
+      </div>`:''}
     </div>`).join('') : `<p style="text-align:center;color:#9a8f80;font-size:14px;padding:18px">${t('no_posts')||'아직 첫 마음이 남겨지지 않았어요. 당신의 한마디가 첫 번째가 되어줄래요?'}</p>`;
 }
 function esc(t){ const d=document.createElement('div'); d.textContent=t||''; return d.innerHTML; }
-function addWarm(id){
+function addReact(id, kind){ // kind: 'warm' | 'cheer' (v11)
   const d = boardData(); const p = d.find(x=>x.id===id); if(!p) return;
-  const key='warm_'+id; if(localStorage.getItem(key)) return;
-  localStorage.setItem(key,'1'); p.warm=(p.warm||0)+1; boardSave(d);
+  const key='react_'+id+'_'+kind; if(localStorage.getItem(key)) return;
+  localStorage.setItem(key,'1');
+  if(kind==='cheer'){ p.cheer=(p.cheer||0)+1; } else { p.warm=(p.warm||0)+1; }
+  boardSave(d);
   boardRender(document.querySelector('.btab.on')?.dataset.btab);
 }
 document.addEventListener('DOMContentLoaded', async ()=>{
@@ -629,9 +634,9 @@ document.addEventListener('DOMContentLoaded', async ()=>{
 
 /* ── 동적 텍스트 번역 (v4) — alert/모달/검사 UI ── */
 const DYN = {
- en:{ph_r_nick:'Nickname (optional)',ph_r_contact:'Contact (optional — only if score is high)',riT:'💌 Keep your result for later (optional)',riC:'I agree to the collection and use of personal information (details)',riP:'📋 View full privacy policy',rec_saved:'Record saved',need_all:'Please answer all questions 🙏',need_text:'Please write a little 🙏',need_song:'Please enter a song title 🎶',song_ok:'Song request received 🎶 We will add it to the playlist!',board_ok:'Your heart has been shared 🧡',secret_ok:'Saved as a secret note 🔒 Only visible in this browser',apply_ok:'Request received 🌿 We will contact you within 1-2 days. (Demo — actual: 010-6410-0146)',see_video:'🎬 Watch related video',ask_prog:'Ask about this program',ph_nick:'Nickname (optional)',ph_heart:'Write your heart. Anything is fine.',ph_song_t:'Song title',ph_song_w:'Why this song (optional)',no_posts:'No hearts shared yet. Could yours be the first?',wait_songs:'Waiting for the first song request',no_ans:'Unanswered',q0:'Not at all',q1:'Several days',q2:'More than a week',q3:'Nearly every day',w0:'Not at all',w1:'A little',w2:'Moderately',w3:'Quite',w4:'Very',res_of:'result',crisis_t:'💔 Are you having thoughts of hurting yourself?',crisis_d:'You can reach out right now — Suicide Prevention 1393 (24h) / Youth Line 1388. You are not alone.',score_of:'of',anon:'Anonymous heart',secret_tag:'· 🔒Secret',warm_btn:'🧡 Warm',all:'All',warm_tab:'Most warmed',phq_qs:["Feeling down, depressed, or hopeless", "Little interest or pleasure in doing things", "Sleep problems", "Feeling tired or having no energy", "Poor appetite or overeating", "Feeling bad about yourself", "Trouble concentrating", "Moving/speaking slowly or being restless", "Thoughts that you'd be better off dead"],gad_qs:["Feeling nervous, anxious, or on edge", "Not being able to stop worrying", "Worrying too much", "Trouble relaxing", "Being so restless it's hard to sit still", "Becoming easily annoyed or irritable", "Feeling afraid something awful might happen"],who_qs:["I have felt cheerful and in good spirits", "I have felt calm and relaxed", "I have felt active and vigorous", "I woke up feeling fresh and rested", "My daily life has been filled with things that interest me"]},
- zh:{ph_r_nick:'昵称（选填）',ph_r_contact:'联系方式（选填 — 仅分数高时联系）',riT:'💌 留下结果，以后再看（选填）',riC:'我同意收集和使用个人信息（详情）',riP:'📋 查看完整隐私政策',rec_saved:'已保存记录',need_all:'请回答所有问题 🙏',need_text:'请写下一点心情 🙏',need_song:'请输入歌曲名 🎶',song_ok:'已收到点歌 🎶 会加入播放列表！',board_ok:'心情已留下 🧡',secret_ok:'已保存为秘密留言 🔒 仅在此浏览器可见',apply_ok:'咨询申请已接收 🌿 1-2天内联系您。',see_video:'🎬 观看相关视频',ask_prog:'咨询此活动',ph_nick:'昵称（可不填）',ph_heart:'写下你的心情。什么都可以。',ph_song_t:'歌曲名',ph_song_w:'点这首歌的理由（选填）',no_posts:'还没有留下心情。你的会是第一条吗？',wait_songs:'等待第一首点歌',no_ans:'未回答',q0:'完全没有',q1:'几天',q2:'一周以上',q3:'几乎每天',w0:'完全没有',w1:'一点',w2:'一般',w3:'相当',w4:'非常',res_of:'结果',crisis_t:'💔 你有伤害自己的想法吗？',crisis_d:'现在就可以联系 — 自杀预防 1393（24小时）/ 青少年热线 1388。你不是一个人。',score_of:'/',anon:'匿名心情',secret_tag:'· 🔒秘密',warm_btn:'🧡 温暖',all:'全部',warm_tab:'最多温暖',phq_qs:["感到情绪低落、沮丧或绝望", "对做事没有兴趣或乐趣", "睡眠问题", "感到疲倦或没有精力", "食欲不振或暴饮暴食", "对自己感觉不好", "难以集中注意力", "动作/说话变慢或烦躁不安", "认为死了会更好的想法"],gad_qs:["感到紧张、焦虑或烦躁", "无法停止担心", "过分担心", "难以放松", "坐立不安", "容易烦躁或易怒", "害怕会发生可怕的事"],who_qs:["我感到愉快且精神好", "我感到平静和放松", "我感到活跃且有活力", "我醒来时感觉清爽", "我的日常生活充满了有趣的事情"]},
- vi:{ph_r_nick:'Biệt danh (không bắt buộc)',ph_r_contact:'Liên hệ (không bắt buộc — chỉ khi điểm cao)',riT:'💌 Lưu kết quả để xem lại (không bắt buộc)',riC:'Tôi đồng ý thu thập và sử dụng thông tin cá nhân (chi tiết)',riP:'📋 Xem chính sách quyền riêng tư',rec_saved:'Đã lưu',need_all:'Vui lòng trả lời tất cả câu hỏi 🙏',need_text:'Xin viết ra một chút 🙏',need_song:'Vui lòng nhập tên bài hát 🎶',song_ok:'Đã nhận yêu cầu bài hát 🎶 Sẽ thêm vào playlist!',board_ok:'Tâm tình đã được chia sẻ 🧡',secret_ok:'Đã lưu như lời nhắn kín 🔒 Chỉ thấy trên trình duyệt này',apply_ok:'Đã nhận đăng ký 🌿 Sẽ liên hệ trong 1-2 ngày. (Demo — thực tế: 010-6410-0146)',see_video:'🎬 Xem video liên quan',ask_prog:'Hỏi về chương trình này',ph_nick:'Biệt danh (không bắt buộc)',ph_heart:'Viết tâm tình của bạn. Điều gì cũng được.',ph_song_t:'Tên bài hát',ph_song_w:'Vì sao chọn bài này (không bắt buộc)',no_posts:'Chưa có tâm tình nào. Bạn sẽ là người đầu tiên chứ?',wait_songs:'Đang chờ bài hát đầu tiên',no_ans:'Chưa trả lời',q0:'Không hề',q1:'Vài ngày',q2:'Hơn một tuần',q3:'Gần như mỗi ngày',w0:'Không hề',w1:'Một chút',w2:'Trung bình',w3:'Khá',w4:'Rất',res_of:'kết quả',crisis_t:'💔 Bạn đang có ý nghĩ làm tổn thương mình sao?',crisis_d:'Bạn có thể liên hệ ngay — Phòng chống tự tử 1393 (24h) / Đường dây tuổi teen 1388. Bạn không một mình.',score_of:'/',anon:'Tâm tình ẩn danh',secret_tag:'· 🔒Kín',warm_btn:'🧡 Ấm áp',all:'Tất cả',warm_tab:'Nhiều ấm áp nhất',phq_qs:["Cảm thấy chán nản, trầm cảm hoặc tuyệt vọng", "Mất hứng thú hoặc vui thích", "Vấn đề giấc ngủ", "Cảm thấy mệt mỏi, thiếu năng lượng", "Ăn kém hoặc ăn quá nhiều", "Cảm thấy tệ về bản thân", "Khó tập trung", "Nói/chậm hoặc bồn chồn", "Nghĩ rằng chết đi thì hơn"],gad_qs:["Cảm thấy lo lắng, căng thẳng", "Không thể ngừng lo lắng", "Lo lắng quá mức", "Khó thư giãn", "Bồn chồn khó ngồi yên", "Dễ cáu gắt", "Sợ điều tồi tệ sẽ xảy ra"],who_qs:["Tôi thấy vui vẻ và tinh thần tốt", "Tôi thấy bình tĩnh và thư giãn", "Tôi thấy năng động", "Tôi thức dậy thấy tươi mới", "Cuộc sống hàng ngày đầy điều thú vị"]}
+ en:{cheer_btn:'💪 Cheer',ph_r_nick:'Nickname (optional)',ph_r_contact:'Contact (optional — only if score is high)',riT:'💌 Keep your result for later (optional)',riC:'I agree to the collection and use of personal information (details)',riP:'📋 View full privacy policy',rec_saved:'Record saved',need_all:'Please answer all questions 🙏',need_text:'Please write a little 🙏',need_song:'Please enter a song title 🎶',song_ok:'Song request received 🎶 We will add it to the playlist!',board_ok:'Your heart has been shared 🧡',secret_ok:'Saved as a secret note 🔒 Only visible in this browser',apply_ok:'Request received 🌿 We will contact you within 1-2 days. (Demo — actual: 010-6410-0146)',see_video:'🎬 Watch related video',ask_prog:'Ask about this program',ph_nick:'Nickname (optional)',ph_heart:'Write your heart. Anything is fine.',ph_song_t:'Song title',ph_song_w:'Why this song (optional)',no_posts:'No hearts shared yet. Could yours be the first?',wait_songs:'Waiting for the first song request',no_ans:'Unanswered',q0:'Not at all',q1:'Several days',q2:'More than a week',q3:'Nearly every day',w0:'Not at all',w1:'A little',w2:'Moderately',w3:'Quite',w4:'Very',res_of:'result',crisis_t:'💔 Are you having thoughts of hurting yourself?',crisis_d:'You can reach out right now — Suicide Prevention 1393 (24h) / Youth Line 1388. You are not alone.',score_of:'of',anon:'Anonymous heart',secret_tag:'· 🔒Secret',warm_btn:'🧡 Warm',all:'All',warm_tab:'Most warmed',phq_qs:["Feeling down, depressed, or hopeless", "Little interest or pleasure in doing things", "Sleep problems", "Feeling tired or having no energy", "Poor appetite or overeating", "Feeling bad about yourself", "Trouble concentrating", "Moving/speaking slowly or being restless", "Thoughts that you'd be better off dead"],gad_qs:["Feeling nervous, anxious, or on edge", "Not being able to stop worrying", "Worrying too much", "Trouble relaxing", "Being so restless it's hard to sit still", "Becoming easily annoyed or irritable", "Feeling afraid something awful might happen"],who_qs:["I have felt cheerful and in good spirits", "I have felt calm and relaxed", "I have felt active and vigorous", "I woke up feeling fresh and rested", "My daily life has been filled with things that interest me"]},
+ zh:{cheer_btn:'💪 加油',ph_r_nick:'昵称（选填）',ph_r_contact:'联系方式（选填 — 仅分数高时联系）',riT:'💌 留下结果，以后再看（选填）',riC:'我同意收集和使用个人信息（详情）',riP:'📋 查看完整隐私政策',rec_saved:'已保存记录',need_all:'请回答所有问题 🙏',need_text:'请写下一点心情 🙏',need_song:'请输入歌曲名 🎶',song_ok:'已收到点歌 🎶 会加入播放列表！',board_ok:'心情已留下 🧡',secret_ok:'已保存为秘密留言 🔒 仅在此浏览器可见',apply_ok:'咨询申请已接收 🌿 1-2天内联系您。',see_video:'🎬 观看相关视频',ask_prog:'咨询此活动',ph_nick:'昵称（可不填）',ph_heart:'写下你的心情。什么都可以。',ph_song_t:'歌曲名',ph_song_w:'点这首歌的理由（选填）',no_posts:'还没有留下心情。你的会是第一条吗？',wait_songs:'等待第一首点歌',no_ans:'未回答',q0:'完全没有',q1:'几天',q2:'一周以上',q3:'几乎每天',w0:'完全没有',w1:'一点',w2:'一般',w3:'相当',w4:'非常',res_of:'结果',crisis_t:'💔 你有伤害自己的想法吗？',crisis_d:'现在就可以联系 — 自杀预防 1393（24小时）/ 青少年热线 1388。你不是一个人。',score_of:'/',anon:'匿名心情',secret_tag:'· 🔒秘密',warm_btn:'🧡 温暖',all:'全部',warm_tab:'最多温暖',phq_qs:["感到情绪低落、沮丧或绝望", "对做事没有兴趣或乐趣", "睡眠问题", "感到疲倦或没有精力", "食欲不振或暴饮暴食", "对自己感觉不好", "难以集中注意力", "动作/说话变慢或烦躁不安", "认为死了会更好的想法"],gad_qs:["感到紧张、焦虑或烦躁", "无法停止担心", "过分担心", "难以放松", "坐立不安", "容易烦躁或易怒", "害怕会发生可怕的事"],who_qs:["我感到愉快且精神好", "我感到平静和放松", "我感到活跃且有活力", "我醒来时感觉清爽", "我的日常生活充满了有趣的事情"]},
+ vi:{cheer_btn:'💪 Cố lên',ph_r_nick:'Biệt danh (không bắt buộc)',ph_r_contact:'Liên hệ (không bắt buộc — chỉ khi điểm cao)',riT:'💌 Lưu kết quả để xem lại (không bắt buộc)',riC:'Tôi đồng ý thu thập và sử dụng thông tin cá nhân (chi tiết)',riP:'📋 Xem chính sách quyền riêng tư',rec_saved:'Đã lưu',need_all:'Vui lòng trả lời tất cả câu hỏi 🙏',need_text:'Xin viết ra một chút 🙏',need_song:'Vui lòng nhập tên bài hát 🎶',song_ok:'Đã nhận yêu cầu bài hát 🎶 Sẽ thêm vào playlist!',board_ok:'Tâm tình đã được chia sẻ 🧡',secret_ok:'Đã lưu như lời nhắn kín 🔒 Chỉ thấy trên trình duyệt này',apply_ok:'Đã nhận đăng ký 🌿 Sẽ liên hệ trong 1-2 ngày. (Demo — thực tế: 010-6410-0146)',see_video:'🎬 Xem video liên quan',ask_prog:'Hỏi về chương trình này',ph_nick:'Biệt danh (không bắt buộc)',ph_heart:'Viết tâm tình của bạn. Điều gì cũng được.',ph_song_t:'Tên bài hát',ph_song_w:'Vì sao chọn bài này (không bắt buộc)',no_posts:'Chưa có tâm tình nào. Bạn sẽ là người đầu tiên chứ?',wait_songs:'Đang chờ bài hát đầu tiên',no_ans:'Chưa trả lời',q0:'Không hề',q1:'Vài ngày',q2:'Hơn một tuần',q3:'Gần như mỗi ngày',w0:'Không hề',w1:'Một chút',w2:'Trung bình',w3:'Khá',w4:'Rất',res_of:'kết quả',crisis_t:'💔 Bạn đang có ý nghĩ làm tổn thương mình sao?',crisis_d:'Bạn có thể liên hệ ngay — Phòng chống tự tử 1393 (24h) / Đường dây tuổi teen 1388. Bạn không một mình.',score_of:'/',anon:'Tâm tình ẩn danh',secret_tag:'· 🔒Kín',warm_btn:'🧡 Ấm áp',all:'Tất cả',warm_tab:'Nhiều ấm áp nhất',phq_qs:["Cảm thấy chán nản, trầm cảm hoặc tuyệt vọng", "Mất hứng thú hoặc vui thích", "Vấn đề giấc ngủ", "Cảm thấy mệt mỏi, thiếu năng lượng", "Ăn kém hoặc ăn quá nhiều", "Cảm thấy tệ về bản thân", "Khó tập trung", "Nói/chậm hoặc bồn chồn", "Nghĩ rằng chết đi thì hơn"],gad_qs:["Cảm thấy lo lắng, căng thẳng", "Không thể ngừng lo lắng", "Lo lắng quá mức", "Khó thư giãn", "Bồn chồn khó ngồi yên", "Dễ cáu gắt", "Sợ điều tồi tệ sẽ xảy ra"],who_qs:["Tôi thấy vui vẻ và tinh thần tốt", "Tôi thấy bình tĩnh và thư giãn", "Tôi thấy năng động", "Tôi thức dậy thấy tươi mới", "Cuộc sống hàng ngày đầy điều thú vị"]}
 };
 let CUR_LANG='ko';
 function t(k){ return (CUR_LANG!=='ko' && DYN[CUR_LANG] && DYN[CUR_LANG][k]) || null; }
@@ -659,10 +664,10 @@ const I18N = {
   "hero2": "An online rest space for multicultural youth and all teens. Anytime, anywhere. There's music, warm words, and someone who listens to you.",
   "heroBtn1": "🫶 3-min Mind Check",
   "heroBtn2": "Request Counseling",
-  "card1t": "Rest (Online)",
-  "card1d": "A 24-hour open online shelter. No login needed, right from your room. Being quiet is fine, being together too.",
+  "card1t": "Rest (Relax)",
+  "card1d": "A 24-hour open online shelter. No login needed,<br>right from your room. Being quiet is fine, being together<br>too.",
   "card2t": "Express (Art)",
-  "card2d": "Express your heart through choir, music, and art. You don't have to be good.",
+  "card2d": "Express your heart through choir, music, and art.<br>You don’t have to be good.",
   "card3t": "Share (Care)",
   "card3d": "When your heart is heavy, don't carry it alone. Start with one easy session.",
   "s1tag": "ONLINE SPACE",
@@ -812,10 +817,10 @@ const I18N = {
   "hero2": "为多文化青少年和所有青少年开放的线上休憩空间。任何时候、任何地方。这里有音乐、温暖的文字，和愿意倾听你的人。",
   "heroBtn1": "🫶 3分钟心灵检查",
   "heroBtn2": "申请商谈",
-  "card1t": "休息 (线上)",
-  "card1d": "24小时开放的线上休憩所。无需登录，就在你的房间。安静也可以，一起也可以。",
+  "card1t": "休息 (Relax)",
+  "card1d": "24小时开放的线上休憩所。无需登录，<br>就在你的房间。安静也可以，一起<br>也可以。",
   "card2t": "表达 (艺术)",
-  "card2d": "通过合唱、音乐、美术表达内心。不需要做得很好。",
+  "card2d": "通过合唱、音乐、美术表达内心<br>的艺术活动。做得不好也没关系。",
   "card3t": "分享 (关怀)",
   "card3d": "心情沉重时，不要独自承受。从一次轻松的对话开始。",
   "s1tag": "线上空间",
@@ -965,10 +970,10 @@ const I18N = {
   "hero2": "Không gian nghỉ ngơi trực tuyến cho thanh thiếu niên đa văn hóa và mọi bạn trẻ. Mọi lúc, mọi nơi. Có âm nhạc, những lời ấm áp, và người lắng nghe bạn.",
   "heroBtn1": "🫶 Kiểm tra 3 phút",
   "heroBtn2": "Đăng ký tư vấn",
-  "card1t": "Nghỉ ngơi (Online)",
-  "card1d": "Không gian mở 24 giờ. Không cần đăng nhập, ngay tại phòng bạn. Im lặng cũng được, cùng nhau cũng được.",
+  "card1t": "Nghỉ ngơi (Relax)",
+  "card1d": "Không gian mở 24 giờ. Không cần đăng nhập,<br>ngay tại phòng bạn. Im lặng cũng được, cùng nhau<br>cũng được.",
   "card2t": "Biểu lộ (Nghệ thuật)",
-  "card2d": "Biểu đạt cảm xúc qua hợp xướng, âm nhạc, hội họa. Không cần giỏi.",
+  "card2d": "Biểu đạt cảm xúc qua hợp xướng, âm nhạc, hội họa<br>của nghệ thuật. Không cần giỏi.",
   "card3t": "Chia sẻ (Chăm sóc)",
   "card3d": "Khi lòng nặng nề, đừng ôm một mình. Bắt đầu với một buổi nhẹ nhàng.",
   "s1tag": "KHÔNG GIAN ONLINE",
