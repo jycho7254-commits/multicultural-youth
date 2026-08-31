@@ -49,6 +49,7 @@ h1{font-size:22px;color:var(--sage-dark);margin-bottom:6px}
     <button class="on" data-tab="board" onclick="showTab('board')">📋 게시판</button>
     <button data-tab="counsel" onclick="showTab('counsel')">📨 상담 신청</button>
     <button data-tab="checks" onclick="showTab('checks')">📊 마음체크</button>
+    <button data-tab="music" onclick="showTab('music')">🎵 음악 관리</button>
   </div>
 
   <div id="tab-board">
@@ -62,6 +63,17 @@ h1{font-size:22px;color:var(--sage-dark);margin-bottom:6px}
   <div id="tab-checks" style="display:none">
     <div id="checks-stats"></div>
     <div id="checks-list"></div>
+  </div>
+  <div id="tab-music" style="display:none">
+    <h3 style="margin-bottom:10px;font-size:16px">🎧 플레이리스트 편성 (방문자에게 표시될 곡 목록)</h3>
+    <div class="card" style="display:flex;gap:8px;flex-wrap:wrap">
+      <input id="pl-title" placeholder="곡 제목" style="flex:1;min-width:150px;padding:10px 12px;border:1.5px solid #e8dcc8;border-radius:9px;font-size:14px">
+      <input id="pl-search" placeholder="유튜브뮤직 검색어 (선택, 없으면 제목 사용)" style="flex:1;min-width:150px;padding:10px 12px;border:1.5px solid #e8dcc8;border-radius:9px;font-size:14px">
+      <button onclick="addPlaylist()" style="padding:10px 18px;background:var(--sage);color:#fff;border:none;border-radius:9px;font-size:14px;cursor:pointer;font-weight:bold">추가</button>
+    </div>
+    <div id="pl-list" style="margin-top:14px"></div>
+    <h3 style="margin:22px 0 10px;font-size:16px">🎶 방문자 신청곡</h3>
+    <div id="song-list"></div>
   </div>
 </div>
 
@@ -108,21 +120,98 @@ async function api(path){
   return r.ok ? r.json() : [];
 }
 
-async function loadAll(){ loadBoard(); loadCounsel(); loadChecks(); }
+async function loadAll(){ loadBoard(); loadCounsel(); loadChecks(); loadMusic(); }
 
 async function loadBoard(){
-  const rows = await api('eoullim_board_public?order=created_at.desc&limit=100');
+  const rows = await api('eoullim_board?order=created_at.desc&limit=100'); // 관리자: 원문 직접 조회 (비밀글 포함)
   document.getElementById('board-stats').innerHTML =
     `<span class="stat"><b>${rows.length}</b><span>총 게시글</span></span>
      <span class="stat"><b>${rows.filter(r=>r.secret).length}</b><span>비밀글</span></span>
      <span class="stat"><b>${rows.reduce((s,r)=>s+(r.warm||0),0)}</b><span>따뜻해요</span></span>`;
   document.getElementById('board-list').innerHTML = rows.length ? rows.map(r => `
     <div class="card">
-      <div class="meta"><span>#${r.id} · ${r.nick || '익명'} ${r.secret ? '· 🔒비밀' : ''}</span><span>${(r.created_at||'').slice(0,16).replace('T',' ')}</span></div>
-      <div class="body">${r.secret ? '<i style="color:#9a8f80">[비밀글 — 내용 운영툴에서도 서버 정책상 미표시]</i>' : esc(r.text)}</div>
+      <div class="meta"><span>#${r.id} · ${r.nick || '익명'} ${r.secret ? '· 🔒비밀글(운영자 열람)' : ''}</span><span>${(r.created_at||'').slice(0,16).replace('T',' ')}</span></div>
+      <div class="body">${esc(r.text)}</div>
       <div style="font-size:12.5px;color:var(--sub);margin-top:8px">🧡 ${r.warm||0} · 💪 ${r.cheer||0}</div>
-      <button class="btn-del" onclick="delPost(${r.id})">삭제</button>
+      ${r.admin_reply ? `<div style="background:#fdf3e7;border-left:3px solid var(--sage);padding:8px 12px;margin-top:8px;border-radius:0 8px 8px 0;font-size:13.5px"><b>내 답글:</b> ${esc(r.admin_reply)}</div>` : ''}
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <input id="reply-${r.id}" placeholder="답글 달기 (게시판에 표시됩니다)" value="${r.admin_reply ? esc(r.admin_reply) : ''}" style="flex:1;min-width:200px;padding:9px 12px;border:1.5px solid #e8dcc8;border-radius:9px;font-size:13.5px">
+        <button onclick="saveReply(${r.id})" style="padding:9px 16px;background:var(--sage);color:#fff;border:none;border-radius:9px;font-size:13.5px;cursor:pointer">답글 저장</button>
+        <button class="btn-del" onclick="delPost(${r.id})">삭제</button>
+      </div>
     </div>`).join('') : '<div class="empty">게시글이 없어요</div>';
+}
+
+async function saveReply(id){
+  const txt = document.getElementById('reply-' + id).value.trim();
+  if(!txt){ alert('답글 내용을 입력해주세요'); return; }
+  const r = await fetch(DB_URL + '/rest/v1/eoullim_board?id=eq.' + id, {
+    method: 'PATCH',
+    headers: {...H, 'Content-Type': 'application/json'},
+    body: JSON.stringify({admin_reply: txt})
+  });
+  if(r.ok){ loadBoard(); } else { alert('답글 저장 실패'); }
+}
+
+/* ── 음악 관리 (v13) ── */
+async function loadMusic(){
+  // 플레이리스트
+  const pl = await api('eoullim_playlist?order=pos,id');
+  document.getElementById('pl-list').innerHTML = pl.length ? pl.map(x => `
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px">
+      <div>🎧 <b>${esc(x.title)}</b> <span style="font-size:12px;color:#9a8f80">${esc(x.search_q||'')}</span></div>
+      <div style="display:flex;gap:6px">
+        <button class="btn-del" onclick="delPlaylist(${x.id})">삭제</button>
+      </div>
+    </div>`).join('') : '<div class="empty" style="padding:16px">편성된 곡이 없어요 — 위에서 추가해보세요</div>';
+  // 신청곡
+  const songs = await api('eoullim_songs?order=created_at.desc&limit=50');
+  document.getElementById('song-list').innerHTML = songs.length ? songs.map(x => `
+    <div class="card" style="padding:12px 16px">
+      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px">
+        <div>🎶 <b>${esc(x.title)}</b>${x.why ? ` — ${esc(x.why)}` : ''}</div>
+        <div style="display:flex;gap:6px">
+          <button onclick="acceptSong(${x.id})" style="padding:7px 12px;background:#e8f3e8;color:#5c7f60;border:1.5px solid #c8dfc8;border-radius:8px;font-size:12.5px;cursor:pointer">플레이리스트에 추가</button>
+          <button class="btn-del" onclick="delSong(${x.id})">삭제</button>
+        </div>
+      </div>
+      <div style="font-size:12px;color:#9a8f80;margin-top:6px">${(x.created_at||'').slice(0,16).replace('T',' ')}</div>
+    </div>`).join('') : '<div class="empty" style="padding:16px">신청곡이 아직 없어요</div>';
+}
+
+async function addPlaylist(){
+  const title = document.getElementById('pl-title').value.trim();
+  const search = document.getElementById('pl-search').value.trim() || title;
+  if(!title){ alert('곡 제목을 입력해주세요'); return; }
+  const r = await fetch(DB_URL + '/rest/v1/eoullim_playlist', {
+    method: 'POST',
+    headers: {...H, 'Content-Type': 'application/json'},
+    body: JSON.stringify({title, search_q: search})
+  });
+  if(r.ok){ document.getElementById('pl-title').value=''; document.getElementById('pl-search').value=''; loadMusic(); }
+}
+async function acceptSong(id){
+  // 신청곡을 플레이리스트로
+  const songs = await api('eoullim_songs?id=eq.' + id);
+  if(!songs.length) return;
+  const t0 = songs[0].title;
+  await fetch(DB_URL + '/rest/v1/eoullim_playlist', {
+    method: 'POST',
+    headers: {...H, 'Content-Type': 'application/json'},
+    body: JSON.stringify({title: t0, search_q: t0})
+  });
+  await fetch(DB_URL + '/rest/v1/eoullim_songs?id=eq.' + id, {method: 'DELETE', headers: H});
+  loadMusic();
+}
+async function delPlaylist(id){
+  if(!confirm('플레이리스트에서 제거할까요?')) return;
+  await fetch(DB_URL + '/rest/v1/eoullim_playlist?id=eq.' + id, {method: 'DELETE', headers: H});
+  loadMusic();
+}
+async function delSong(id){
+  if(!confirm('신청곡을 삭제할까요?')) return;
+  await fetch(DB_URL + '/rest/v1/eoullim_songs?id=eq.' + id, {method: 'DELETE', headers: H});
+  loadMusic();
 }
 
 async function loadCounsel(){
