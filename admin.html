@@ -112,7 +112,7 @@ if(sessionStorage.getItem('admin')){
 function showTab(t){
   document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('on'));
   document.querySelector(`[data-tab="${t}"]`).classList.add('on');
-  ['board','counsel','checks'].forEach(x => document.getElementById('tab-'+x).style.display = x===t?'block':'none');
+  ['board','counsel','checks','music'].forEach(x => document.getElementById('tab-'+x).style.display = x===t?'block':'none');
 }
 
 async function api(path){
