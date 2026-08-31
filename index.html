@@ -292,15 +292,15 @@ footer a:hover{color:#fff}
       <div id="questions"></div>
       <!-- 설문자 익명 정보 (v8) — 고위험 조기 발견용, 선택 -->
       <div id="resp-info" style="margin:18px 0;padding:16px;background:var(--cream2);border-radius:12px">
-        <p style="font-size:13.5px;font-weight:bold;color:var(--sage-dark);margin-bottom:10px" data-i18n="riT">💌 결과를 나중에도 돌아볼 수 있어요 (선택)</p>
+        <p style="font-size:13.5px;font-weight:bold;color:var(--sage-dark);margin-bottom:10px" data-i18n="riT">💌 정보를 입력하면 결과가 기록돼요 (필수)</p>
         <div class="resp-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <input id="resp-nick" placeholder="닉네임/이름 (선택)" ph-key="ph_r_nick" style="padding:10px 12px;border:1.5px solid #e8dcc8;border-radius:9px;font-size:13.5px;background:#fff;min-width:0;width:100%">
+          <input id="resp-nick" placeholder="닉네임/이름" ph-key="ph_r_nick" style="padding:10px 12px;border:1.5px solid #e8dcc8;border-radius:9px;font-size:13.5px;background:#fff;min-width:0;width:100%">
           <select id="resp-age" style="padding:10px 12px;border:1.5px solid #e8dcc8;border-radius:9px;font-size:13.5px;background:#fff;min-width:0;width:100%">
-            <option value="" data-i18n="ageOpt">나이대 (선택)</option>
+            <option value="" data-i18n="ageOpt">나이대를 선택해주세요</option>
             <option data-i18n="age1">14세 미만</option><option data-i18n="age2">14~16세</option><option data-i18n="age3">17~19세</option><option data-i18n="age4">20대</option><option data-i18n="age5">30대 이상</option>
           </select>
         </div>
-        <input id="resp-contact" placeholder="연락처 (선택 — 점수가 높을 때만 연락드려요)" ph-key="ph_r_contact" style="width:100%;margin-top:8px;padding:10px 12px;border:1.5px solid #e8dcc8;border-radius:9px;font-size:13.5px;background:#fff;min-width:0;box-sizing:border-box">
+        <input id="resp-contact" placeholder="연락처 (선택 — 높은 점수일 때만 연락드려요)" ph-key="ph_r_contact" style="width:100%;margin-top:8px;padding:10px 12px;border:1.5px solid #e8dcc8;border-radius:9px;font-size:13.5px;background:#fff;min-width:0;box-sizing:border-box">
         <label style="display:flex;gap:7px;align-items:flex-start;margin-top:10px;font-size:12.5px;color:var(--sub);cursor:pointer">
           <input type="checkbox" id="resp-consent" style="margin-top:2px">
           <span data-i18n="riC">개인정보 수집·이용에 동의합니다 (자세히 보기)</span>
@@ -460,22 +460,36 @@ async function loadPlaylistDB(){
     if(r.ok){
       const rows = await r.json();
       if(rows.length){
-        window.PLAYLIST_DB = rows.map(x=>({name: x.title, q: x.search_q || x.title}));
+        window.PLAYLIST_DB = rows.map(x=>({name: x.title, q: x.search_q || x.title, cat: x.category || '기타'}));
         renderPlaylists();
       }
     }
   }catch(e){}
 }
+const PL_CAT_I18N = {
+  en: {'위로가 되는 노래':'Comforting Songs','따뜻한 발라드':'Warm Ballads','잔잔한 피아노':'Calm Piano','힐링 팝':'Healing Pop','명상 음악':'Meditation','기타':'More'},
+  zh: {'위로가 되는 노래':'安慰的歌','따뜻한 발라드':'温暖的抒情歌','잔잔한 피아노':'宁静的钢琴曲','힐링 팝':'治愈系流行','명상 음악':'冥想音乐','기타':'更多'},
+  vi: {'위로가 되는 노래':'Bài hát an ủi','따뜻한 발라드':'Ballad ấm áp','잔잔한 피아노':'Piano nhẹ nhàng','힐링 팝':'Pop chữa lành','명상 음악':'Nhạc thiền','기타':'Khác'}
+};
 function renderPlaylists(){
   const plEl = document.getElementById('pl-list');
   if(!plEl) return;
   const EMO = ['🫂','🕯️','🎹','☀️','🌿','🎵','🌊','🍂','✨','💫'];
+  const YT = CUR_LANG==='ko' ? '유튜브뮤직' : 'YouTube Music';
   if(window.PLAYLIST_DB && PLAYLIST_DB.length){
-    plEl.innerHTML = PLAYLIST_DB.map((x,i)=>`<a href="https://music.youtube.com/search?q=${encodeURIComponent(x.q)}" target="_blank" rel="noopener" style="display:block;padding:9px 12px;background:var(--cream2);border-radius:10px;margin:5px 0;font-size:13.5px;color:var(--ink);text-decoration:none">${EMO[i%EMO.length]} ${x.name} <span style="color:var(--sage-dark);font-size:11.5px">▶ ${CUR_LANG==='ko'?'유튜브뮤직':'YouTube Music'}</span></a>`).join('');
+    // 카테고리별 그룹 (v14 — 운영자가 구성한 카테고리)
+    const groups = {};
+    PLAYLIST_DB.forEach(x => { const c = x.cat || '기타'; (groups[c] = groups[c] || []).push(x); });
+    let idx = 0;
+    plEl.innerHTML = Object.keys(groups).map(cat => {
+      const catName = (CUR_LANG!=='ko' && PL_CAT_I18N[CUR_LANG] && PL_CAT_I18N[CUR_LANG][cat]) || cat;
+      return `<div style="margin:8px 0 4px;font-size:13px;font-weight:bold;color:var(--sage-dark)">🎧 ${catName}</div>` +
+        groups[cat].map(x=>{ const i = idx++; return `<a href="https://music.youtube.com/search?q=${encodeURIComponent(x.q)}" target="_blank" rel="noopener" style="display:block;padding:9px 12px;background:var(--cream2);border-radius:10px;margin:4px 0;font-size:13.5px;color:var(--ink);text-decoration:none">${EMO[i%EMO.length]} ${x.name} <span style="color:var(--sage-dark);font-size:11.5px">▶ ${YT}</span></a>`; }).join('');
+    }).join('');
     return;
   }
   const list = PL_I18N[CUR_LANG] || PL_I18N.ko;
-  plEl.innerHTML = list.map(x=>`<a href="https://music.youtube.com/search?q=${encodeURIComponent(x[1])}" target="_blank" rel="noopener" style="display:block;padding:9px 12px;background:var(--cream2);border-radius:10px;margin:5px 0;font-size:13.5px;color:var(--ink);text-decoration:none">${x[2]} ${x[0]} <span style="color:var(--sage-dark);font-size:11.5px">▶ ${CUR_LANG==='ko'?'유튜브뮤직':'YouTube Music'}</span></a>`).join('');
+  plEl.innerHTML = list.map(x=>`<a href="https://music.youtube.com/search?q=${encodeURIComponent(x[1])}" target="_blank" rel="noopener" style="display:block;padding:9px 12px;background:var(--cream2);border-radius:10px;margin:5px 0;font-size:13.5px;color:var(--ink);text-decoration:none">${x[2]} ${x[0]} <span style="color:var(--sage-dark);font-size:11.5px">▶ ${YT}</span></a>`).join('');
 }
 loadPlaylistDB();
 
@@ -581,7 +595,7 @@ async function loadBoard(){
   const rows = await dbSelect();
   if(rows) BOARD_REMOTE = rows.map(r=>({
     id:r.id, nick:r.nick, text:r.text===null?'':(r.text||''), secret:r.secret, key:r.owner_key,
-    warm:r.warm||0, cheer:r.cheer||0, reply:r.admin_reply||null, date:(r.created_at||'').slice(0,10)
+    warm:r.warm||0, cheer:r.cheer||0, reply:r.admin_reply||null, reply_secret:!!r.admin_reply_secret, date:(r.created_at||'').slice(0,10)
   }));
 }
 function boardData(){
@@ -603,7 +617,7 @@ function boardRender(sort){
       ${p._mine
         ? `<p style="font-size:14.5px;margin-bottom:8px;white-space:pre-wrap">${esc(p.text)}</p>`
         : `<p style="font-size:14px;margin-bottom:8px;color:#b8ab9a;background:var(--cream2);border-radius:10px;padding:12px 14px">🔒 ${(t('secret_body')||'비밀글이에요')} — <span style="font-size:12.5px">${(t('secret_note')||'작성자만 볼 수 있어요')}</span></p>`}
-      ${p.reply?`<div style="background:#fdf3e7;border-left:3px solid var(--sage);border-radius:0 10px 10px 0;padding:10px 14px;margin-bottom:8px;font-size:13.5px"><b style="color:var(--sage-dark)">🧡 ${(t('admin_reply_tag')||'어울림에서')}</b><br>${esc(p.reply)}</div>`:''}
+      ${p.reply && (!p.reply_secret || p._mine)?`<div style="background:#fdf3e7;border-left:3px solid var(--sage);border-radius:0 10px 10px 0;padding:10px 14px;margin-bottom:8px;font-size:13.5px"><b style="color:var(--sage-dark)">🧡 ${(t('admin_reply_tag')||'어울림에서')}${p.reply_secret?' 🔒':''}</b><br>${esc(p.reply)}</div>`:''}
       ${p._mine?`<div style="display:flex;gap:8px">
         <button onclick="addReact(${p.id},'warm')" style="border:1.5px solid #e8dcc8;background:var(--cream);border-radius:16px;padding:5px 14px;font-size:13px;cursor:pointer">${t('warm_btn')||'🧡 따뜻해요'} ${p.warm||0}</button>
         <button onclick="addReact(${p.id},'cheer')" style="border:1.5px solid #e8dcc8;background:var(--cream);border-radius:16px;padding:5px 14px;font-size:13px;cursor:pointer">${t('cheer_btn')||'💪 힘내요'} ${p.cheer||0}</button>
@@ -705,9 +719,9 @@ document.addEventListener('DOMContentLoaded', async ()=>{
 
 /* ── 동적 텍스트 번역 (v4) — alert/모달/검사 UI ── */
 const DYN = {
- en:{admin_reply_tag:'From Eoullim',cheer_btn:'💪 Cheer',ph_r_nick:'Nickname (optional)',ph_r_contact:'Contact (optional — only if score is high)',riT:'💌 Keep your result for later (optional)',riC:'I agree to the collection and use of personal information (details)',riP:'📋 View full privacy policy',rec_saved:'Record saved',need_all:'Please answer all questions 🙏',need_text:'Please write a little 🙏',need_song:'Please enter a song title 🎶',song_ok:'Song request received 🎶 We will add it to the playlist!',board_ok:'Your heart has been shared 🧡',secret_ok:'Saved as a secret note 🔒 Only visible in this browser',apply_ok:'Request received 🌿 We will contact you within 1-2 days. (Demo — actual: 010-6410-0146)',see_video:'🎬 Watch related video',ask_prog:'Ask about this program',ph_nick:'Nickname (optional)',ph_heart:'Write your heart. Anything is fine.',ph_song_t:'Song title',ph_song_w:'Why this song (optional)',no_posts:'No hearts shared yet. Could yours be the first?',wait_songs:'Waiting for the first song request',no_ans:'Unanswered',q0:'Not at all',q1:'Several days',q2:'More than a week',q3:'Nearly every day',w0:'Not at all',w1:'A little',w2:'Moderately',w3:'Quite',w4:'Very',res_of:'result',crisis_t:'💔 Are you having thoughts of hurting yourself?',crisis_d:'You can reach out right now — Suicide Prevention 1393 (24h) / Youth Line 1388. You are not alone.',score_of:'of',anon:'Anonymous heart',secret_tag:'· 🔒Secret',warm_btn:'🧡 Warm',all:'All',warm_tab:'Most warmed',phq_qs:["Feeling down, depressed, or hopeless", "Little interest or pleasure in doing things", "Sleep problems", "Feeling tired or having no energy", "Poor appetite or overeating", "Feeling bad about yourself", "Trouble concentrating", "Moving/speaking slowly or being restless", "Thoughts that you'd be better off dead"],gad_qs:["Feeling nervous, anxious, or on edge", "Not being able to stop worrying", "Worrying too much", "Trouble relaxing", "Being so restless it's hard to sit still", "Becoming easily annoyed or irritable", "Feeling afraid something awful might happen"],who_qs:["I have felt cheerful and in good spirits", "I have felt calm and relaxed", "I have felt active and vigorous", "I woke up feeling fresh and rested", "My daily life has been filled with things that interest me"]},
- zh:{admin_reply_tag:'来自和谐',cheer_btn:'💪 加油',ph_r_nick:'昵称（选填）',ph_r_contact:'联系方式（选填 — 仅分数高时联系）',riT:'💌 留下结果，以后再看（选填）',riC:'我同意收集和使用个人信息（详情）',riP:'📋 查看完整隐私政策',rec_saved:'已保存记录',need_all:'请回答所有问题 🙏',need_text:'请写下一点心情 🙏',need_song:'请输入歌曲名 🎶',song_ok:'已收到点歌 🎶 会加入播放列表！',board_ok:'心情已留下 🧡',secret_ok:'已保存为秘密留言 🔒 仅在此浏览器可见',apply_ok:'咨询申请已接收 🌿 1-2天内联系您。',see_video:'🎬 观看相关视频',ask_prog:'咨询此活动',ph_nick:'昵称（可不填）',ph_heart:'写下你的心情。什么都可以。',ph_song_t:'歌曲名',ph_song_w:'点这首歌的理由（选填）',no_posts:'还没有留下心情。你的会是第一条吗？',wait_songs:'等待第一首点歌',no_ans:'未回答',q0:'完全没有',q1:'几天',q2:'一周以上',q3:'几乎每天',w0:'完全没有',w1:'一点',w2:'一般',w3:'相当',w4:'非常',res_of:'结果',crisis_t:'💔 你有伤害自己的想法吗？',crisis_d:'现在就可以联系 — 自杀预防 1393（24小时）/ 青少年热线 1388。你不是一个人。',score_of:'/',anon:'匿名心情',secret_tag:'· 🔒秘密',warm_btn:'🧡 温暖',all:'全部',warm_tab:'最多温暖',phq_qs:["感到情绪低落、沮丧或绝望", "对做事没有兴趣或乐趣", "睡眠问题", "感到疲倦或没有精力", "食欲不振或暴饮暴食", "对自己感觉不好", "难以集中注意力", "动作/说话变慢或烦躁不安", "认为死了会更好的想法"],gad_qs:["感到紧张、焦虑或烦躁", "无法停止担心", "过分担心", "难以放松", "坐立不安", "容易烦躁或易怒", "害怕会发生可怕的事"],who_qs:["我感到愉快且精神好", "我感到平静和放松", "我感到活跃且有活力", "我醒来时感觉清爽", "我的日常生活充满了有趣的事情"]},
- vi:{admin_reply_tag:'Từ Eoullim',cheer_btn:'💪 Cố lên',ph_r_nick:'Biệt danh (không bắt buộc)',ph_r_contact:'Liên hệ (không bắt buộc — chỉ khi điểm cao)',riT:'💌 Lưu kết quả để xem lại (không bắt buộc)',riC:'Tôi đồng ý thu thập và sử dụng thông tin cá nhân (chi tiết)',riP:'📋 Xem chính sách quyền riêng tư',rec_saved:'Đã lưu',need_all:'Vui lòng trả lời tất cả câu hỏi 🙏',need_text:'Xin viết ra một chút 🙏',need_song:'Vui lòng nhập tên bài hát 🎶',song_ok:'Đã nhận yêu cầu bài hát 🎶 Sẽ thêm vào playlist!',board_ok:'Tâm tình đã được chia sẻ 🧡',secret_ok:'Đã lưu như lời nhắn kín 🔒 Chỉ thấy trên trình duyệt này',apply_ok:'Đã nhận đăng ký 🌿 Sẽ liên hệ trong 1-2 ngày. (Demo — thực tế: 010-6410-0146)',see_video:'🎬 Xem video liên quan',ask_prog:'Hỏi về chương trình này',ph_nick:'Biệt danh (không bắt buộc)',ph_heart:'Viết tâm tình của bạn. Điều gì cũng được.',ph_song_t:'Tên bài hát',ph_song_w:'Vì sao chọn bài này (không bắt buộc)',no_posts:'Chưa có tâm tình nào. Bạn sẽ là người đầu tiên chứ?',wait_songs:'Đang chờ bài hát đầu tiên',no_ans:'Chưa trả lời',q0:'Không hề',q1:'Vài ngày',q2:'Hơn một tuần',q3:'Gần như mỗi ngày',w0:'Không hề',w1:'Một chút',w2:'Trung bình',w3:'Khá',w4:'Rất',res_of:'kết quả',crisis_t:'💔 Bạn đang có ý nghĩ làm tổn thương mình sao?',crisis_d:'Bạn có thể liên hệ ngay — Phòng chống tự tử 1393 (24h) / Đường dây tuổi teen 1388. Bạn không một mình.',score_of:'/',anon:'Tâm tình ẩn danh',secret_tag:'· 🔒Kín',warm_btn:'🧡 Ấm áp',all:'Tất cả',warm_tab:'Nhiều ấm áp nhất',phq_qs:["Cảm thấy chán nản, trầm cảm hoặc tuyệt vọng", "Mất hứng thú hoặc vui thích", "Vấn đề giấc ngủ", "Cảm thấy mệt mỏi, thiếu năng lượng", "Ăn kém hoặc ăn quá nhiều", "Cảm thấy tệ về bản thân", "Khó tập trung", "Nói/chậm hoặc bồn chồn", "Nghĩ rằng chết đi thì hơn"],gad_qs:["Cảm thấy lo lắng, căng thẳng", "Không thể ngừng lo lắng", "Lo lắng quá mức", "Khó thư giãn", "Bồn chồn khó ngồi yên", "Dễ cáu gắt", "Sợ điều tồi tệ sẽ xảy ra"],who_qs:["Tôi thấy vui vẻ và tinh thần tốt", "Tôi thấy bình tĩnh và thư giãn", "Tôi thấy năng động", "Tôi thức dậy thấy tươi mới", "Cuộc sống hàng ngày đầy điều thú vị"]}
+ en:{need_nick:'Please enter a nickname (needed to save your record)',need_age:'Please select your age group',need_consent:'Please agree to the privacy policy',admin_reply_tag:'From Eoullim',cheer_btn:'💪 Cheer',ph_r_nick:'Nickname (optional)',ph_r_contact:'Contact (optional — only if score is high)',riT:'💌 Keep your result for later (optional)',riC:'I agree to the collection and use of personal information (details)',riP:'📋 View full privacy policy',rec_saved:'Record saved',need_all:'Please answer all questions 🙏',need_text:'Please write a little 🙏',need_song:'Please enter a song title 🎶',song_ok:'Song request received 🎶 We will add it to the playlist!',board_ok:'Your heart has been shared 🧡',secret_ok:'Saved as a secret note 🔒 Only visible in this browser',apply_ok:'Request received 🌿 We will contact you within 1-2 days. (Demo — actual: 010-6410-0146)',see_video:'🎬 Watch related video',ask_prog:'Ask about this program',ph_nick:'Nickname (optional)',ph_heart:'Write your heart. Anything is fine.',ph_song_t:'Song title',ph_song_w:'Why this song (optional)',no_posts:'No hearts shared yet. Could yours be the first?',wait_songs:'Waiting for the first song request',no_ans:'Unanswered',q0:'Not at all',q1:'Several days',q2:'More than a week',q3:'Nearly every day',w0:'Not at all',w1:'A little',w2:'Moderately',w3:'Quite',w4:'Very',res_of:'result',crisis_t:'💔 Are you having thoughts of hurting yourself?',crisis_d:'You can reach out right now — Suicide Prevention 1393 (24h) / Youth Line 1388. You are not alone.',score_of:'of',anon:'Anonymous heart',secret_tag:'· 🔒Secret',warm_btn:'🧡 Warm',all:'All',warm_tab:'Most warmed',phq_qs:["Feeling down, depressed, or hopeless", "Little interest or pleasure in doing things", "Sleep problems", "Feeling tired or having no energy", "Poor appetite or overeating", "Feeling bad about yourself", "Trouble concentrating", "Moving/speaking slowly or being restless", "Thoughts that you'd be better off dead"],gad_qs:["Feeling nervous, anxious, or on edge", "Not being able to stop worrying", "Worrying too much", "Trouble relaxing", "Being so restless it's hard to sit still", "Becoming easily annoyed or irritable", "Feeling afraid something awful might happen"],who_qs:["I have felt cheerful and in good spirits", "I have felt calm and relaxed", "I have felt active and vigorous", "I woke up feeling fresh and rested", "My daily life has been filled with things that interest me"]},
+ zh:{need_nick:'请输入昵称（保存记录需要）',need_age:'请选择年龄段',need_consent:'请同意隐私政策',admin_reply_tag:'来自和谐',cheer_btn:'💪 加油',ph_r_nick:'昵称（选填）',ph_r_contact:'联系方式（选填 — 仅分数高时联系）',riT:'💌 留下结果，以后再看（选填）',riC:'我同意收集和使用个人信息（详情）',riP:'📋 查看完整隐私政策',rec_saved:'已保存记录',need_all:'请回答所有问题 🙏',need_text:'请写下一点心情 🙏',need_song:'请输入歌曲名 🎶',song_ok:'已收到点歌 🎶 会加入播放列表！',board_ok:'心情已留下 🧡',secret_ok:'已保存为秘密留言 🔒 仅在此浏览器可见',apply_ok:'咨询申请已接收 🌿 1-2天内联系您。',see_video:'🎬 观看相关视频',ask_prog:'咨询此活动',ph_nick:'昵称（可不填）',ph_heart:'写下你的心情。什么都可以。',ph_song_t:'歌曲名',ph_song_w:'点这首歌的理由（选填）',no_posts:'还没有留下心情。你的会是第一条吗？',wait_songs:'等待第一首点歌',no_ans:'未回答',q0:'完全没有',q1:'几天',q2:'一周以上',q3:'几乎每天',w0:'完全没有',w1:'一点',w2:'一般',w3:'相当',w4:'非常',res_of:'结果',crisis_t:'💔 你有伤害自己的想法吗？',crisis_d:'现在就可以联系 — 自杀预防 1393（24小时）/ 青少年热线 1388。你不是一个人。',score_of:'/',anon:'匿名心情',secret_tag:'· 🔒秘密',warm_btn:'🧡 温暖',all:'全部',warm_tab:'最多温暖',phq_qs:["感到情绪低落、沮丧或绝望", "对做事没有兴趣或乐趣", "睡眠问题", "感到疲倦或没有精力", "食欲不振或暴饮暴食", "对自己感觉不好", "难以集中注意力", "动作/说话变慢或烦躁不安", "认为死了会更好的想法"],gad_qs:["感到紧张、焦虑或烦躁", "无法停止担心", "过分担心", "难以放松", "坐立不安", "容易烦躁或易怒", "害怕会发生可怕的事"],who_qs:["我感到愉快且精神好", "我感到平静和放松", "我感到活跃且有活力", "我醒来时感觉清爽", "我的日常生活充满了有趣的事情"]},
+ vi:{need_nick:'Vui lòng nhập biệt danh (để lưu kết quả)',need_age:'Vui lòng chọn độ tuổi',need_consent:'Vui lòng đồng ý chính sách quyền riêng tư',admin_reply_tag:'Từ Eoullim',cheer_btn:'💪 Cố lên',ph_r_nick:'Biệt danh (không bắt buộc)',ph_r_contact:'Liên hệ (không bắt buộc — chỉ khi điểm cao)',riT:'💌 Lưu kết quả để xem lại (không bắt buộc)',riC:'Tôi đồng ý thu thập và sử dụng thông tin cá nhân (chi tiết)',riP:'📋 Xem chính sách quyền riêng tư',rec_saved:'Đã lưu',need_all:'Vui lòng trả lời tất cả câu hỏi 🙏',need_text:'Xin viết ra một chút 🙏',need_song:'Vui lòng nhập tên bài hát 🎶',song_ok:'Đã nhận yêu cầu bài hát 🎶 Sẽ thêm vào playlist!',board_ok:'Tâm tình đã được chia sẻ 🧡',secret_ok:'Đã lưu như lời nhắn kín 🔒 Chỉ thấy trên trình duyệt này',apply_ok:'Đã nhận đăng ký 🌿 Sẽ liên hệ trong 1-2 ngày. (Demo — thực tế: 010-6410-0146)',see_video:'🎬 Xem video liên quan',ask_prog:'Hỏi về chương trình này',ph_nick:'Biệt danh (không bắt buộc)',ph_heart:'Viết tâm tình của bạn. Điều gì cũng được.',ph_song_t:'Tên bài hát',ph_song_w:'Vì sao chọn bài này (không bắt buộc)',no_posts:'Chưa có tâm tình nào. Bạn sẽ là người đầu tiên chứ?',wait_songs:'Đang chờ bài hát đầu tiên',no_ans:'Chưa trả lời',q0:'Không hề',q1:'Vài ngày',q2:'Hơn một tuần',q3:'Gần như mỗi ngày',w0:'Không hề',w1:'Một chút',w2:'Trung bình',w3:'Khá',w4:'Rất',res_of:'kết quả',crisis_t:'💔 Bạn đang có ý nghĩ làm tổn thương mình sao?',crisis_d:'Bạn có thể liên hệ ngay — Phòng chống tự tử 1393 (24h) / Đường dây tuổi teen 1388. Bạn không một mình.',score_of:'/',anon:'Tâm tình ẩn danh',secret_tag:'· 🔒Kín',warm_btn:'🧡 Ấm áp',all:'Tất cả',warm_tab:'Nhiều ấm áp nhất',phq_qs:["Cảm thấy chán nản, trầm cảm hoặc tuyệt vọng", "Mất hứng thú hoặc vui thích", "Vấn đề giấc ngủ", "Cảm thấy mệt mỏi, thiếu năng lượng", "Ăn kém hoặc ăn quá nhiều", "Cảm thấy tệ về bản thân", "Khó tập trung", "Nói/chậm hoặc bồn chồn", "Nghĩ rằng chết đi thì hơn"],gad_qs:["Cảm thấy lo lắng, căng thẳng", "Không thể ngừng lo lắng", "Lo lắng quá mức", "Khó thư giãn", "Bồn chồn khó ngồi yên", "Dễ cáu gắt", "Sợ điều tồi tệ sẽ xảy ra"],who_qs:["Tôi thấy vui vẻ và tinh thần tốt", "Tôi thấy bình tĩnh và thư giãn", "Tôi thấy năng động", "Tôi thức dậy thấy tươi mới", "Cuộc sống hàng ngày đầy điều thú vị"]}
 };
 let CUR_LANG='ko';
 function t(k){ return (CUR_LANG!=='ko' && DYN[CUR_LANG] && DYN[CUR_LANG][k]) || null; }
@@ -824,7 +838,7 @@ const I18N = {
   "em2": "Suicide Prevention",
   "em3": "Youth Hotline",
   "em4": "Emergency",
-  "riT": "💌 Keep your result for later (optional)",
+  "riT": "💌 Your info saves the result (required)",
   "riC": "I agree to the collection and use of personal information (details)",
   "riP": "📋 View full privacy policy",
   "s3cred": "🌐 These are the world's most widely used standard screening tools (PHQ-9: international primary care standard · WHO-5: developed by WHO · all free public instruments)",
@@ -851,7 +865,7 @@ const I18N = {
   "mSong": "🎶 Request a Song",
   "mSongSub": "Your requests fill our playlist.",
   "mSongBtn": "Request",
-  "ageOpt": "Age group (optional)",
+  "ageOpt": "Select age group",
   "age1": "Under 14",
   "age2": "14–16",
   "age3": "17–19",
@@ -875,7 +889,8 @@ const I18N = {
   "hl3": "Multicultural Family 1577-0199",
   "pvT": "📋 Privacy Policy",
   "pvBody": "<p><b style=\"color:var(--ink)\">1. Data Collected (Optional)</b><br>Nickname/name, age group, contact — all optional. The test works without them.</p><p><b style=\"color:var(--ink)\">2. Purpose</b><br>① To review your results later<br>② To contact you for safety if scores are high (only if contact provided)</p><p><b style=\"color:var(--ink)\">3. Storage & Disposal</b><br>Stored only in this browser, never sent to a server. Deleted with browser data. Separate consent will be requested for any future server storage.</p><p><b style=\"color:var(--ink)\">4. Third-party Sharing</b><br>None. Never provided or sold to anyone.</p><p><b style=\"color:var(--ink)\">5. Safety Measures</b><br>Only for self/other-harm risk signals (e.g., item 9), we recommend public support lines such as Suicide Prevention 1393.</p><p><b style=\"color:var(--ink)\">6. Contact</b><br>Art in Touch Social Cooperative · 010-6410-0146</p><p style=\"font-size:12px;color:#9a8f80\">Effective: August 30, 2026</p>",
-  "pvOk": "OK"
+  "pvOk": "OK",
+  "ph_r_nick": "Nickname"
  },
  "zh": {
   "logo": "和谐 心灵休憩处",
@@ -977,7 +992,7 @@ const I18N = {
   "em2": "自杀预防",
   "em3": "青少年热线",
   "em4": "紧急",
-  "riT": "💌 留下结果，以后再看（选填）",
+  "riT": "💌 填写信息即可保存结果（必填）",
   "riC": "我同意收集和使用个人信息（详情）",
   "riP": "📋 查看完整隐私政策",
   "s3cred": "🌐 这些是世界上使用最广泛的标准筛查工具（PHQ-9：国际初级医疗标准 · WHO-5：世界卫生组织开发 · 均为免费公开工具）",
@@ -1004,7 +1019,7 @@ const I18N = {
   "mSong": "🎶 点歌",
   "mSongSub": "大家的点歌会填满播放列表。",
   "mSongBtn": "提交",
-  "ageOpt": "年龄段（选填）",
+  "ageOpt": "请选择年龄段",
   "age1": "14岁以下",
   "age2": "14–16岁",
   "age3": "17–19岁",
@@ -1028,7 +1043,8 @@ const I18N = {
   "hl3": "多文化家庭 1577-0199",
   "pvT": "📋 隐私政策",
   "pvBody": "<p><b style=\"color:var(--ink)\">1. 收集项目（选填）</b><br>昵称/姓名、年龄段、联系方式 — 均为选填，不填也可使用检查。</p><p><b style=\"color:var(--ink)\">2. 收集目的</b><br>① 方便以后查看检查结果<br>② 分数较高时为安全联系您（仅在填写联系方式时）</p><p><b style=\"color:var(--ink)\">3. 保管与销毁</b><br>信息仅保存在本浏览器中，不会传送到服务器。删除浏览器数据时一并删除。日后转为服务器保存时会再次征得同意。</p><p><b style=\"color:var(--ink)\">4. 第三方提供</b><br>不会。任何情况下都不向外部提供或出售。</p><p><b style=\"color:var(--ink)\">5. 安全措施</b><br>仅在出现自伤/伤人风险信号（如第9题）时，建议联系自杀预防咨询1393等公共支援机构。</p><p><b style=\"color:var(--ink)\">6. 咨询</b><br>Art in Touch 社会合作社 · 010-6410-0146</p><p style=\"font-size:12px;color:#9a8f80\">施行日: 2026年8月30日</p>",
-  "pvOk": "确认"
+  "pvOk": "确认",
+  "ph_r_nick": "昵称"
  },
  "vi": {
   "logo": "Eoullim – Chốn nghỉ tâm hồn",
@@ -1130,7 +1146,7 @@ const I18N = {
   "em2": "Phòng chống tự tử",
   "em3": "Đường dây tuổi teen",
   "em4": "Khẩn cấp",
-  "riT": "💌 Lưu kết quả để xem lại (không bắt buộc)",
+  "riT": "💌 Điền thông tin để lưu kết quả (bắt buộc)",
   "riC": "Tôi đồng ý thu thập và sử dụng thông tin cá nhân (chi tiết)",
   "riP": "📋 Xem chính sách quyền riêng tư",
   "s3cred": "🌐 Đây là các công cụ sàng lọc chuẩn được sử dụng rộng rãi nhất thế giới (PHQ-9: tiêu chuẩn y tế sơ cấp quốc tế · WHO-5: WHO phát triển · đều miễn phí)",
@@ -1157,7 +1173,7 @@ const I18N = {
   "mSong": "🎶 Đề xuất bài hát",
   "mSongSub": "Đề xuất của bạn sẽ lấp đầy playlist.",
   "mSongBtn": "Gửi",
-  "ageOpt": "Độ tuổi (không bắt buộc)",
+  "ageOpt": "Chọn độ tuổi",
   "age1": "Dưới 14",
   "age2": "14–16",
   "age3": "17–19",
@@ -1181,7 +1197,8 @@ const I18N = {
   "hl3": "Gia đình đa văn hóa 1577-0199",
   "pvT": "📋 Chính sách quyền riêng tư",
   "pvBody": "<p><b style=\"color:var(--ink)\">1. Thông tin thu thập (không bắt buộc)</b><br>Biệt danh/tên, độ tuổi, liên hệ — đều là tùy chọn, không điền vẫn dùng được.</p><p><b style=\"color:var(--ink)\">2. Mục đích</b><br>① Để xem lại kết quả sau này<br>② Liên hệ vì an toàn khi điểm cao (chỉ khi bạn cung cấp liên hệ)</p><p><b style=\"color:var(--ink)\">3. Lưu trữ & Hủy</b><br>Chỉ lưu trong trình duyệt này, không gửi máy chủ. Xóa khi xóa dữ liệu trình duyệt. Nếu sau này chuyển sang máy chủ sẽ xin đồng ý riêng.</p><p><b style=\"color:var(--ink)\">4. Chia sẻ bên thứ 3</b><br>Không. Không bao giờ cung cấp hay bán cho bất kỳ ai.</p><p><b style=\"color:var(--ink)\">5. Biện pháp an toàn</b><br>Chỉ khi có tín hiệu nguy cơ tự hại (ví dụ câu 9), chúng tôi khuyến nghị liên hệ đường dây công cộng như Phòng chống tự tử 1393.</p><p><b style=\"color:var(--ink)\">6. Liên hệ</b><br>Hợp tác xã Art in Touch · 010-6410-0146</p><p style=\"font-size:12px;color:#9a8f80\">Hiệu lực: 30/8/2026</p>",
-  "pvOk": "Đồng ý"
+  "pvOk": "Đồng ý",
+  "ph_r_nick": "Biệt danh"
  }
 };
 // 원문(한국어) 백업 — 첫 로드 시 1회 (08-30 언어 복귀 버그 수정)
@@ -1255,6 +1272,13 @@ document.getElementById('btn-submit').onclick=()=>{
   const T=TESTS[curTest];
   const n=Object.keys(answers).length;
   if(n<T.qs.length){alert(t('need_all')||'모든 문항에 답해주세요 🙏');return;}
+  // v14: 개인정보 필수 (닉네임/나이대/동의) — 결과는 바로 제공
+  const nickEl=document.getElementById('resp-nick');
+  const ageEl=document.getElementById('resp-age');
+  const consentEl=document.getElementById('resp-consent');
+  if(nickEl && !nickEl.value.trim()){alert(t('need_nick')||'닉네임을 입력해주세요 (기록 저장에 필요해요)');nickEl.focus();return;}
+  if(ageEl && !ageEl.value){alert(t('need_age')||'나이대를 선택해주세요');ageEl.focus();return;}
+  if(consentEl && !consentEl.checked){alert(t('need_consent')||'개인정보 수집에 동의해주세요 (개인정보 처리방침 확인)');consentEl.focus();return;}
   let score=0;
   for(let i=0;i<T.qs.length;i++) score+=T.invert?answers[i]:answers[i];
   const pct = T.invert?Math.round(score/20*100):score;
@@ -1329,7 +1353,7 @@ function saveCheckRecord(testKey, score, level){
       fetch(BOARD_DB_URL + '/rest/v1/eoullim_checks', {
         method: 'POST',
         headers: {'apikey': BOARD_DB_KEY, 'Authorization': 'Bearer ' + BOARD_DB_KEY, 'Content-Type': 'application/json', 'Prefer': 'return-minimal'},
-        body: JSON.stringify({test:testKey, score:score, level:String(level).slice(0,60), nick:nick||null, age:age||null, contact:contact||null})
+        body: JSON.stringify({test:testKey, score:score, level:String(level).slice(0,60), nick:nick||null, age:age||null, contact:contact||null, answers:(typeof answers!=='undefined'? Object.values(T.qs.map((q,i)=>answers[i])) : null)})
       });
     }
   }catch(e){}
